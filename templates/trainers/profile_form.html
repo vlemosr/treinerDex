@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Criar treinador | TrainerDex{% endblock %}
+{% block body_class %}login-game-page character-create-page{% endblock %}
+
+{% block content %}
+<section class="login-screen character-create-screen">
+    <div class="trainerdex-logo" aria-label="TrainerDex">
+        <span>TRAINER</span><span>DEX</span>
+    </div>
+
+    <form class="game-login-card character-create-card" method="post" novalidate>
+        {% csrf_token %}
+        <div class="login-divider" aria-hidden="true"></div>
+        <div class="setup-header">
+            <span class="form-kicker">Registro de treinador</span>
+            <h1>Crie seu personagem</h1>
+            <p>Escolha a identidade, cidade e clã do seu novo treinador.</p>
+        </div>
+
+        {% if form.non_field_errors %}
+            <div class="form-errors">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="form-grid">
+            {% for field in form %}
+                <div class="field-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {{ field.errors }}
+                </div>
+            {% endfor %}
+        </div>
+
+        <button class="login-button" type="submit">Criar personagem</button>
+    </form>
+</section>
+{% endblock %}

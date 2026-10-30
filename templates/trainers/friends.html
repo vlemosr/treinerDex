@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Amigos | TrainerDex{% endblock %}
+{% block body_class %}game-dashboard-page{% endblock %}
+
+{% block content %}
+<section class="friends-page">
+    <nav class="top-nav" aria-label="Navegacao principal">
+        <div class="nav-player">
+            <div class="avatar-badge nav-avatar" aria-hidden="true">{{ active_trainer.trainer_name|slice:":1" }}</div>
+            <div>
+                <strong>{{ active_trainer.trainer_name }}</strong>
+                <span>{{ active_trainer.get_clan_display }} - Amigos</span>
+            </div>
+        </div>
+
+        <div class="nav-tabs" aria-label="Secoes">
+            <a href="{% url 'trainers:dashboard' %}">Jogar</a>
+            <strong>Amigos</strong>
+        </div>
+
+        <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button class="ghost-button" type="submit">Sair</button>
+        </form>
+    </nav>
+
+    <main class="friends-shell">
+        <section class="friends-panel">
+            <div class="panel-top-strip"></div>
+            <header class="game-panel-header">
+                <p class="form-kicker">Rede de treinadores</p>
+                <h1>Amigos</h1>
+            </header>
+
+            <form class="friend-form" method="post">
+                {% csrf_token %}
+                {% if friend_form.non_field_errors %}<div class="form-errors">{{ friend_form.non_field_errors }}</div>{% endif %}
+                <div class="form-grid">
+                    {% for field in friend_form %}
+                        <div class="field-group {% if field.name == 'notes' %}friend-notes-field{% endif %}">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {{ field.errors }}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="friend-actions">
+                    <button class="primary-button compact-button" type="submit">Adicionar amigo</button>
+                </div>
+            </form>
+
+            <form class="friend-filters" method="get">
+                <div>
+                    <label for="friend-clan-filter">Filtrar por clã</label>
+                    <select id="friend-clan-filter" name="clan">
+                        <option value="">Todos os clãs</option>
+                        {% for value, label in clan_choices %}
+                            <option value="{{ value }}" {% if selected_clan == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button class="ghost-light-button" type="submit">Filtrar</button>
+                {% if selected_clan %}<a href="{% url 'trainers:friends' %}">Limpar filtro</a>{% endif %}
+            </form>
+
+            <section class="friends-list" aria-label="Amigos registrados">
+                {% if friends %}
+                    {% for friend in friends %}
+                        <article class="friend-card" data-friend-card>
+                            <div>
+                                <span>{{ friend.get_status_display }}</span>
+                                <h2>{{ friend.name }}</h2>
+                                <div class="friend-details">
+                                    <span><strong>Apelido:</strong> {{ friend.nickname|default:"Não informado" }}</span>
+                                    <span><strong>Clã:</strong> {{ friend.get_clan_display|default:"Não informado" }}</span>
+                                    <span><strong>Cidade:</strong> {{ friend.get_city_display|default:"Não informada" }}</span>
+                                    <span><strong>Nível:</strong> {{ friend.level }}</span>
+                                </div>
+                                {% if friend.notes %}<p class="friend-notes">{{ friend.notes }}</p>{% endif %}
+                            </div>
+                            <div class="friend-card-actions">
+                                <form method="post" action="{% url 'trainers:friend_invite' friend.id %}">
+                                    {% csrf_token %}
+                                    <button class="ghost-light-button dark-action" type="submit">Enviar convite</button>
+                                </form>
+                                <button
+                                    class="danger-button"
+                                    type="button"
+                                    data-delete-friend
+                                    data-delete-url="{% url 'trainers:friend_delete' friend.id %}"
+                                >
+                                    Excluir
+                                </button>
+                            </div>
+                        </article>
+                    {% endfor %}
+                {% else %}
+                    <p class="empty-state dark-empty">Nenhum amigo registrado ainda.</p>
+                {% endif %}
+            </section>
+        </section>
+    </main>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/friends.js' %}?v=20260901-1"></script>
+{% endblock %}

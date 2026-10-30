@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Admin | TrainerDex{% endblock %}
+{% block body_class %}game-dashboard-page{% endblock %}
+
+{% block content %}
+<section class="admin-page">
+    <nav class="top-nav" aria-label="Navegacao principal">
+        <div class="nav-player">
+            <div class="avatar-badge nav-avatar" aria-hidden="true">A</div>
+            <div>
+                <strong>Admin</strong>
+                <span>{{ users_count }} usuario{{ users_count|pluralize }} criado{{ users_count|pluralize }}</span>
+            </div>
+        </div>
+
+        <div class="nav-tabs" aria-label="Secoes">
+            <strong>Admin</strong>
+            <a href="{% url 'accounts:login' %}">Login</a>
+        </div>
+
+        <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button class="ghost-button" type="submit">Sair</button>
+        </form>
+    </nav>
+
+    <main class="friends-shell">
+        <section class="friends-panel admin-panel">
+            <div class="panel-top-strip"></div>
+            <header class="game-panel-header">
+                <p class="form-kicker">Painel TrainerDex</p>
+                <h1>Usuarios criados</h1>
+            </header>
+
+            <section class="admin-users-list" aria-label="Usuarios cadastrados">
+                {% if users %}
+                    {% for user in users %}
+                        <article class="friend-card admin-user-card">
+                            <div>
+                                <span>Conta #{{ user.id }}</span>
+                                <h2>{{ user.username }}</h2>
+                                <div class="friend-details">
+                                    <span><strong>E-mail:</strong> {{ user.email|default:"Nao informado" }}</span>
+                                    <span><strong>Personagens:</strong> {{ user.trainer_profiles.count }}</span>
+                                    <span><strong>Criado em:</strong> {{ user.date_joined|date:"d/m/Y H:i" }}</span>
+                                </div>
+                            </div>
+                            <form
+                                class="admin-user-delete-form"
+                                method="post"
+                                action="{% url 'accounts:admin_user_delete' user.id %}"
+                                data-character-delete-form
+                                data-character-name="{{ user.username }}"
+                            >
+                                {% csrf_token %}
+                                <button class="danger-button" type="submit">Excluir</button>
+                            </form>
+                        </article>
+                    {% endfor %}
+                {% else %}
+                    <p class="empty-state dark-empty">Nenhum usuario criado ainda.</p>
+                {% endif %}
+            </section>
+        </section>
+    </main>
+
+    <div class="modal-backdrop character-delete-backdrop" data-character-delete-modal aria-hidden="true">
+        <section class="character-delete-dialog" role="alertdialog" aria-modal="true" aria-labelledby="admin-delete-title" aria-describedby="admin-delete-description">
+            <div class="delete-dialog-symbol" aria-hidden="true">!</div>
+            <h2 id="admin-delete-title">Excluir usuario?</h2>
+            <p id="admin-delete-description">Deseja excluir <strong data-character-delete-name></strong>? Todos os personagens desta conta tambem serao removidos.</p>
+            <div class="character-delete-actions">
+                <button class="delete-cancel-button" type="button" data-character-delete-cancel>Cancelar</button>
+                <button class="delete-confirm-button" type="button" data-character-delete-confirm>Excluir</button>
+            </div>
+        </section>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{% load static %}
+<script src="{% static 'js/character-modal.js' %}?v=20260902-1"></script>
+{% endblock %}
