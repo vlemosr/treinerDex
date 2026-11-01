@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Friend, TrainerProfile
+from .models import Friend, PokedexRegistration, TrainerProfile
 
 
 class TrainerProfileForm(forms.ModelForm):
@@ -48,3 +48,35 @@ class FriendForm(forms.ModelForm):
         self.fields['clan'].required = True
         self.fields['city'].required = True
         self.fields['level'].widget.attrs.update({'min': 1})
+
+
+class PokedexRegistrationForm(forms.ModelForm):
+    class Meta:
+        model = PokedexRegistration
+        fields = ('pokemon_number', 'nickname', 'notes', 'is_favorite')
+        labels = {
+            'pokemon_number': 'Número do Pokémon (1 a 649)',
+            'nickname': 'Apelido (opcional)',
+            'notes': 'Anotações da Captura',
+            'is_favorite': 'Marcar como Favorito',
+        }
+        widgets = {
+            'pokemon_number': forms.NumberInput(attrs={'min': 1, 'max': 649, 'placeholder': 'Ex: 25 para Pikachu'}),
+            'nickname': forms.TextInput(attrs={'placeholder': 'Ex: Sparky'}),
+            'notes': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Informações sobre a captura, habitat ou táticas'}),
+        }
+
+
+class PokedexRegistrationUpdateForm(forms.ModelForm):
+    class Meta:
+        model = PokedexRegistration
+        fields = ('nickname', 'notes', 'is_favorite')
+        labels = {
+            'nickname': 'Apelido do Pokémon',
+            'notes': 'Anotações da Captura',
+            'is_favorite': 'Marcar como Favorito',
+        }
+        widgets = {
+            'nickname': forms.TextInput(attrs={'placeholder': 'Ex: Sparky'}),
+            'notes': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Informações sobre a captura, habitat ou táticas'}),
+        }

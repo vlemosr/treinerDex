@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Editar Amigo | TrainerDex{% endblock %}
+{% block body_class %}game-dashboard-page{% endblock %}
+
+{% block content %}
+<section class="friends-page">
+    <nav class="top-nav" aria-label="Navegacao principal">
+        <div class="nav-player">
+            <div class="avatar-badge nav-avatar" aria-hidden="true">{{ active_trainer.trainer_name|slice:":1" }}</div>
+            <div>
+                <strong>{{ active_trainer.trainer_name }}</strong>
+                <span style="color: #66dcff;">{{ active_trainer.get_clan_display }} - Editar Amigo</span>
+            </div>
+        </div>
+
+        <div class="nav-tabs" aria-label="Navegação principal">
+            <a href="{% url 'trainers:home' %}" class="nav-tab-item">Início</a>
+            <a href="{% url 'trainers:dashboard' %}" class="nav-tab-item">Dashboard</a>
+            <a href="{% url 'trainers:pokedex' %}" class="nav-tab-item">Pokédex</a>
+            <a href="{% url 'trainers:friends' %}" class="nav-tab-item is-active">Amigos</a>
+            <a href="{% url 'trainers:profile_detail' %}" class="nav-tab-item">Perfil</a>
+        </div>
+
+        <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button class="ghost-button" type="submit">Sair</button>
+        </form>
+    </nav>
+
+    <main class="friends-shell">
+        <section class="friends-panel" style="max-width: 720px; margin: 0 auto;">
+            <div class="panel-top-strip"></div>
+            <header class="game-panel-header">
+                <span class="form-kicker">Gerenciamento de Amigos</span>
+                <h1>Editar Treinador: {{ friend.name }}</h1>
+                <p style="color: #94a3b8; margin: 4px 0 24px; font-size: 0.95rem;">
+                    Atualize os dados e notas deste amigo em sua jornada Pokémon.
+                </p>
+            </header>
+
+            <form class="friend-form" method="post" novalidate style="background: rgba(10, 15, 28, 0.6); padding: 24px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.08);">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="form-errors">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <div class="form-grid">
+                    {% for field in form %}
+                        <div class="field-group {% if field.name == 'notes' %}friend-notes-field{% endif %}">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {{ field.errors }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="friend-actions" style="display: flex; gap: 14px; margin-top: 26px;">
+                    <button class="primary-button compact-button" type="submit" style="padding: 12px 32px; font-size: 1rem;">Salvar Alterações</button>
+                    <a class="ghost-light-button" href="{% url 'trainers:friends' %}" style="text-decoration: none; display: inline-flex; align-items: center; padding: 12px 24px; font-size: 0.95rem;">Cancelar</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</section>
+{% endblock %}

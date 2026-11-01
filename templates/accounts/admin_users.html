@@ -14,9 +14,13 @@
             </div>
         </div>
 
-        <div class="nav-tabs" aria-label="Secoes">
-            <strong>Admin</strong>
-            <a href="{% url 'accounts:login' %}">Login</a>
+        <div class="nav-tabs" aria-label="Navegação principal">
+            <a href="{% url 'trainers:home' %}" class="nav-tab-item">Início</a>
+            <a href="{% url 'trainers:dashboard' %}" class="nav-tab-item">Dashboard</a>
+            <a href="{% url 'trainers:pokedex' %}" class="nav-tab-item">Pokédex</a>
+            <a href="{% url 'trainers:friends' %}" class="nav-tab-item">Amigos</a>
+            <a href="{% url 'trainers:profile_detail' %}" class="nav-tab-item">Perfil</a>
+            <a href="{% url 'accounts:admin_users' %}" class="nav-tab-item is-active">Admin</a>
         </div>
 
         <form method="post" action="{% url 'accounts:logout' %}">

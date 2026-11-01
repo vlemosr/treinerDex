@@ -10,25 +10,32 @@
         <span>TRAINER</span><span>DEX</span>
     </div>
 
-    <form class="game-login-card game-signup-card" method="post" novalidate>
+    <form class="game-login-card game-signup-card" method="post" novalidate style="position: relative; overflow: hidden; border-radius: 14px; padding: 36px 36px 32px;">
+        <div class="panel-top-strip"></div>
         {% csrf_token %}
-        <div class="login-divider" aria-hidden="true"></div>
-        <h1>Crie seu treinador</h1>
-        <p class="signup-intro">Escolha seus dados para começar uma nova jornada.</p>
+        <div style="text-align: center; margin-bottom: 24px;">
+            <span class="form-kicker">Nova Conta de Treinador</span>
+            <h1 style="color: #ffffff; font-size: 1.85rem; margin: 8px 0; font-weight: 900;">Crie sua Conta</h1>
+            <p style="color: #94a3b8; margin: 0; font-size: 0.95rem;">Cadastre-se para iniciar sua jornada Pokémon no TrainerDex.</p>
+        </div>
 
         {% if form.non_field_errors %}
             <div class="form-errors">{{ form.non_field_errors }}</div>
         {% endif %}
 
         {% for field in form %}
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-            {{ field.errors }}
+            <div style="margin-bottom: 16px;">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {{ field.errors }}
+            </div>
         {% endfor %}
 
-        <button class="login-button" type="submit">Criar conta</button>
-        <div class="login-divider bottom-divider" aria-hidden="true"></div>
-        <p class="login-signup">Já tem uma conta? <a href="{% url 'accounts:login' %}">Entrar</a></p>
+        <button class="login-button" type="submit" style="margin-top: 24px; min-height: 52px; font-size: 1.05rem;">Criar conta</button>
+        <div class="login-divider bottom-divider" aria-hidden="true" style="margin: 32px 0 24px;"></div>
+        <p class="login-signup" style="text-align: center; margin: 0; color: #94a3b8;">
+            Já tem uma conta? <a href="{% url 'accounts:login' %}" style="color: #00d2ff; font-weight: 700; text-decoration: none;">Entrar</a>
+        </p>
     </form>
 </section>
 {% endblock %}

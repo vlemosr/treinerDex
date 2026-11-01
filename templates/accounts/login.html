@@ -10,25 +10,36 @@
         <span>TRAINER</span><span>DEX</span>
     </div>
 
-    <form class="game-login-card" method="post" novalidate>
+    <form class="game-login-card" method="post" novalidate style="position: relative; overflow: hidden; border-radius: 14px; padding: 36px 36px 32px;">
+        <div class="panel-top-strip"></div>
         {% csrf_token %}
-        <div class="login-divider" aria-hidden="true"></div>
+        <div style="text-align: center; margin-bottom: 24px;">
+            <span class="form-kicker">Acesso à Jornada</span>
+            <h1 style="color: #ffffff; font-size: 1.85rem; margin: 8px 0; font-weight: 900;">Entrar no TrainerDex</h1>
+            <p style="color: #94a3b8; margin: 0; font-size: 0.95rem;">Digite seu usuário e senha para continuar.</p>
+        </div>
 
         {% if form.non_field_errors %}
             <div class="form-errors">{{ form.non_field_errors }}</div>
         {% endif %}
 
-        <label for="{{ form.username.id_for_label }}">Usuario ou e-mail</label>
-        {{ form.username }}
-        {{ form.username.errors }}
+        <div style="margin-bottom: 16px;">
+            <label for="{{ form.username.id_for_label }}">Usuário ou e-mail</label>
+            {{ form.username }}
+            {{ form.username.errors }}
+        </div>
 
-        <label for="{{ form.password.id_for_label }}">Senha</label>
-        {{ form.password }}
-        {{ form.password.errors }}
+        <div style="margin-bottom: 20px;">
+            <label for="{{ form.password.id_for_label }}">Senha</label>
+            {{ form.password }}
+            {{ form.password.errors }}
+        </div>
 
-        <button class="login-button" type="submit">Entrar</button>
-        <div class="login-divider bottom-divider" aria-hidden="true"></div>
-        <p class="login-signup">Nao tem uma conta? <a href="{% url 'accounts:signup' %}">Inscreva-se agora!</a></p>
+        <button class="login-button" type="submit" style="min-height: 52px; font-size: 1.05rem;">Entrar</button>
+        <div class="login-divider bottom-divider" aria-hidden="true" style="margin: 32px 0 24px;"></div>
+        <p class="login-signup" style="text-align: center; margin: 0; color: #94a3b8;">
+            Não tem uma conta? <a href="{% url 'accounts:signup' %}" style="color: #00d2ff; font-weight: 700; text-decoration: none;">Inscreva-se agora!</a>
+        </p>
     </form>
 </section>
 {% endblock %}

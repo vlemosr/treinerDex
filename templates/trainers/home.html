@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Início | TrainerDex - Sistema de Treinadores Pokémon{% endblock %}
+{% block body_class %}login-game-page{% endblock %}
+
+{% block content %}
+<div style="min-height: 100vh; display: flex; flex-direction: column;">
+    <!-- Barra Superior de Navegação Aberta -->
+    <header style="width: 100%; border-bottom: 1px solid rgba(0, 210, 255, 0.2); background: rgba(8, 12, 24, 0.9); backdrop-filter: blur(14px); padding: 16px 36px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 210, 255, 0.08);">
+        <div style="display: flex; align-items: center; gap: 28px;">
+            <a href="{% url 'trainers:home' %}" style="text-decoration: none;">
+                <div class="trainerdex-logo" style="margin: 0; font-size: 1.85rem;">
+                    <span>TRAINER</span><span>DEX</span>
+                </div>
+            </a>
+            <nav class="nav-tabs" aria-label="Navegação principal" style="margin-left: 10px;">
+                <a href="{% url 'trainers:home' %}" class="nav-tab-item is-active">Início</a>
+                <a href="{% url 'trainers:dashboard' %}" class="nav-tab-item">Dashboard</a>
+                <a href="{% url 'trainers:pokedex' %}" class="nav-tab-item">Pokédex</a>
+                <a href="{% url 'trainers:friends' %}" class="nav-tab-item">Amigos</a>
+                <a href="{% url 'trainers:profile_detail' %}" class="nav-tab-item">Perfil</a>
+            </nav>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 14px;">
+            {% if user.is_authenticated %}
+                <span style="color: rgba(255, 255, 255, 0.9); font-size: 0.95rem;">Treinador: <strong style="color: #ffd166;">{{ user.username }}</strong></span>
+                <a href="{% url 'trainers:dashboard' %}" class="primary-button compact-button" style="text-decoration: none; display: inline-flex; align-items: center; padding: 10px 22px;">Meu Dashboard</a>
+                <form method="post" action="{% url 'accounts:logout' %}" style="display: inline; margin: 0;">
+                    {% csrf_token %}
+                    <button class="ghost-button" type="submit" style="padding: 10px 18px; font-size: 0.85rem;">Sair</button>
+                </form>
+            {% else %}
+                <a href="{% url 'accounts:login' %}" class="ghost-light-button" style="text-decoration: none; display: inline-flex; align-items: center; padding: 10px 22px;">Entrar</a>
+                <a href="{% url 'accounts:signup' %}" class="primary-button compact-button" style="text-decoration: none; display: inline-flex; align-items: center; padding: 10px 24px;">Cadastrar-se</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Hero Section Vibrante -->
+    <section style="max-width: 1140px; margin: 52px auto 36px; padding: 0 24px; text-align: center;">
+        <span class="form-kicker" style="font-size: 0.82rem; padding: 6px 18px; letter-spacing: 1.5px; border-color: rgba(0, 210, 255, 0.5); box-shadow: 0 0 15px rgba(0, 210, 255, 0.2);">
+            Área Pública Aberta &bull; Sistema Oficial
+        </span>
+
+        <h1 style="font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 950; line-height: 1.15; color: #ffffff; margin: 20px 0 22px; text-shadow: 0 4px 25px rgba(0, 0, 0, 0.8);">
+            A Plataforma Completa do <br>
+            <span style="background: linear-gradient(135deg, #00d2ff 0%, #ffd166 50%, #ff4757 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Treinador Pokémon</span>
+        </h1>
+
+        <p style="font-size: 1.22rem; color: #cbd5e1; max-width: 760px; margin: 0 auto 38px; line-height: 1.65; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);">
+            Gerencie personagens, monte sua equipe de 6 Pokémons, organize a mochila com 40 slots, acompanhe o progresso de missões e expanda sua rede de amigos com filtros de consulta e relatórios dinâmicos.
+        </p>
+
+        <!-- Botões de Ação Principal -->
+        <div style="display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; margin-bottom: 54px;">
+            {% if user.is_authenticated %}
+                <a href="{% url 'trainers:dashboard' %}" class="primary-button" style="text-decoration: none; display: inline-flex; align-items: center; padding: 16px 36px; font-size: 1.1rem; width: auto; margin-top: 0;">
+                    Acessar Meu Dashboard &rarr;
+                </a>
+                <a href="{% url 'trainers:friends' %}" class="ghost-light-button" style="text-decoration: none; display: inline-flex; align-items: center; padding: 16px 32px; font-size: 1.1rem;">
+                    Gerenciar Amigos & Consultas
+                </a>
+            {% else %}
+                <a href="{% url 'accounts:login' %}" class="login-button" style="text-decoration: none; display: inline-flex; align-items: center; padding: 16px 42px; font-size: 1.15rem; width: auto; margin-top: 0;">
+                    Entrar no Sistema &rarr;
+                </a>
+                <a href="{% url 'accounts:signup' %}" class="primary-button" style="text-decoration: none; display: inline-flex; align-items: center; padding: 16px 38px; font-size: 1.15rem; width: auto; margin-top: 0;">
+                    Criar Conta Gratuita
+                </a>
+            {% endif %}
+        </div>
+
+        <div class="login-divider" aria-hidden="true" style="margin-bottom: 52px;"></div>
+
+        <!-- Módulos do Sistema com Estilo Unificado -->
+        <div style="text-align: left; margin-bottom: 32px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: gap: 12px;">
+                <div>
+                    <h2 style="color: #ffffff; font-size: 1.9rem; font-weight: 800; margin: 0 0 6px;">Módulos do Sistema</h2>
+                    <p style="color: #94a3b8; font-size: 1rem; margin: 0;">
+                        Navegue pelos módulos disponíveis. As áreas internas exigem autenticação no backend:
+                    </p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <span style="background: rgba(46, 213, 115, 0.15); border: 1px solid rgba(46, 213, 115, 0.4); color: #2ed573; padding: 4px 12px; border-radius: 999px; font-size: 0.78rem; font-weight: 800;">Banco PostgreSQL</span>
+                    <span style="background: rgba(0, 210, 255, 0.15); border: 1px solid rgba(0, 210, 255, 0.4); color: #00d2ff; padding: 4px 12px; border-radius: 999px; font-size: 0.78rem; font-weight: 800;">Proteção CSRF</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; text-align: left; margin-bottom: 68px;">
+            <!-- Card 1: Dashboard -->
+            <article class="friend-card" style="margin-bottom: 0; border-left: 5px solid #00d2ff !important; flex-direction: column; align-items: flex-start; justify-content: space-between;">
+                <div>
+                    <span style="background: rgba(0, 210, 255, 0.15); color: #00d2ff; border: 1px solid rgba(0, 210, 255, 0.4); border-radius: 999px; padding: 3px 10px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase;">Área Restrita</span>
+                    <h3 style="color: #ffffff; font-size: 1.4rem; margin: 10px 0 8px; font-weight: 800;">Dashboard & Indicadores</h3>
+                    <p style="color: #94a3b8; font-size: 0.95rem; line-height: 1.55; margin-bottom: 18px;">
+                        Painel central com indicadores reais agregados do banco de dados (total de itens, membros na equipe, missões e média de nível dos amigos).
+                    </p>
+                </div>
+                <a href="{% url 'trainers:dashboard' %}" class="ghost-light-button dark-action" style="text-decoration: none; display: inline-flex; align-items: center; padding: 10px 20px; font-size: 0.9rem;">
+                    Acessar Dashboard &rarr;
+                </a>
+            </article>
+
+            <!-- Card 2: CRUD Amigos -->
+            <article class="friend-card" style="margin-bottom: 0; border-left: 5px solid #2ed573 !important; flex-direction: column; align-items: flex-start; justify-content: space-between;">
+                <div>
+                    <span style="background: rgba(46, 213, 115, 0.15); color: #2ed573; border: 1px solid rgba(46, 213, 115, 0.4); border-radius: 999px; padding: 3px 10px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase;">Gestão de Amigos e Relatórios</span>
+                    <h3 style="color: #ffffff; font-size: 1.4rem; margin: 10px 0 8px; font-weight: 800;">Rede de Treinadores</h3>
+                    <p style="color: #94a3b8; font-size: 0.95rem; line-height: 1.55; margin-bottom: 18px;">
+                        Cadastre, visualize, edite e exclua treinadores amigos. Aplique filtros avançados por clã, cidade e status, e exporte relatórios consolidados em formato CSV.
+                    </p>
+                </div>
+                <a href="{% url 'trainers:friends' %}" class="ghost-light-button dark-action" style="text-decoration: none; display: inline-flex; align-items: center; padding: 10px 20px; font-size: 0.9rem;">
+                    Gerenciar Amigos &rarr;
+                </a>
+            </article>
+
+            <!-- Card 3: Pokédex & Equipe -->
+            <article class="friend-card" style="margin-bottom: 0; border-left: 5px solid #fadb14 !important; flex-direction: column; align-items: flex-start; justify-content: space-between;">
+                <div>
+                    <span style="background: rgba(250, 219, 20, 0.15); color: #fadb14; border: 1px solid rgba(250, 219, 20, 0.4); border-radius: 999px; padding: 3px 10px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase;">Pokédex & Mochila</span>
+                    <h3 style="color: #ffffff; font-size: 1.4rem; margin: 10px 0 8px; font-weight: 800;">Pokédex & Equipe</h3>
+                    <p style="color: #94a3b8; font-size: 0.95rem; line-height: 1.55; margin-bottom: 18px;">
+                        Pesquise entre 649 Pokémons, registre capturas, monte sua equipe de 6 integrantes e organize 40 slots de itens no inventário.
+                    </p>
+                </div>
+                <a href="{% url 'trainers:pokedex' %}" class="ghost-light-button dark-action" style="text-decoration: none; display: inline-flex; align-items: center; padding: 10px 20px; font-size: 0.9rem;">
+                    Explorar Pokédex &rarr;
+                </a>
+            </article>
+        </div>
+    </section>
+
+    <!-- Rodapé Elegante -->
+    <footer style="margin-top: auto; border-top: 1px solid rgba(0, 210, 255, 0.15); background: rgba(5, 8, 16, 0.95); padding: 26px 36px; text-align: center; color: #94a3b8; font-size: 0.9rem;">
+        <p style="margin: 0;">TrainerDex &copy; 2026 &bull; Desenvolvido em Django com arquitetura modular, segurança de rotas, proteção CSRF e isolamento de perfil.</p>
+    </footer>
+</div>
+{% endblock %}

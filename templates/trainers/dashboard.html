@@ -15,10 +15,12 @@
             </div>
         </div>
 
-        <div class="nav-tabs" aria-label="Secoes">
-            <button type="button" data-support-open>Suporte</button>
-            <strong>Jogar</strong>
-            <a href="{% url 'trainers:friends' %}">Amigos</a>
+        <div class="nav-tabs" aria-label="Navegação principal">
+            <a href="{% url 'trainers:home' %}" class="nav-tab-item">Início</a>
+            <a href="{% url 'trainers:dashboard' %}" class="nav-tab-item is-active">Dashboard</a>
+            <a href="{% url 'trainers:pokedex' %}" class="nav-tab-item">Pokédex</a>
+            <a href="{% url 'trainers:friends' %}" class="nav-tab-item">Amigos</a>
+            <a href="{% url 'trainers:profile_detail' %}" class="nav-tab-item">Perfil</a>
         </div>
 
         <form method="post" action="{% url 'accounts:logout' %}">
@@ -81,117 +83,70 @@
                 {% endfor %}
             </section>
 
+                        <!-- Indicadores Agregados do Banco de Dados -->
+            <section class="dashboard-stats-strip" aria-label="Indicadores agregados do banco de dados" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin: 18px 0; background: rgba(8, 12, 24, 0.9); padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.15); color: #fff; text-align: center;">
+                <div>
+                    <div style="font-size: 1.35rem; font-weight: 800; color: #f4c542;">{{ stats.pokedex_count }}</div>
+                    <div style="font-size: 0.7rem; color: #a0aec0; text-transform: uppercase; font-weight: bold;">Pokédex</div>
+                </div>
+                <div>
+                    <div style="font-size: 1.35rem; font-weight: 800; color: #48bb78;">{{ stats.team_count }}/6</div>
+                    <div style="font-size: 0.7rem; color: #a0aec0; text-transform: uppercase; font-weight: bold;">Equipe</div>
+                </div>
+                <div>
+                    <div style="font-size: 1.35rem; font-weight: 800; color: #4299e1;">{{ stats.total_inventory_items }}</div>
+                    <div style="font-size: 0.7rem; color: #a0aec0; text-transform: uppercase; font-weight: bold;">Mochila</div>
+                </div>
+                <div>
+                    <div style="font-size: 1.35rem; font-weight: 800; color: #ed8936;">{{ stats.missions_completed_count }}</div>
+                    <div style="font-size: 0.7rem; color: #a0aec0; text-transform: uppercase; font-weight: bold;">Missões</div>
+                </div>
+                <div>
+                    <div style="font-size: 1.35rem; font-weight: 800; color: #9f7aea;">{{ stats.friends_count }}</div>
+                    <div style="font-size: 0.7rem; color: #a0aec0; text-transform: uppercase; font-weight: bold;">Amigos &bull; Nv. {{ stats.friends_avg_level }}</div>
+                </div>
+            </section>
+
             <section class="menu-grid" aria-label="Menu do treinador">
-                <button
+                <a
+                    href="{% url 'trainers:profile_detail' %}"
                     class="menu-card menu-card-button"
-                    type="button"
-                    data-profile-open
+                    style="text-decoration: none; border-left: 4px solid #00d2ff; display: flex; flex-direction: column; justify-content: center; align-items: center;"
                 >
-                    <span>Perfil</span>
-                    <small>Editar treinador</small>
-                </button>
+                    <span style="color: #66dcff;">Perfil</span>
+                    <small>Gerenciar personagens e conta</small>
+                </a>
                 <button
                     class="menu-card menu-card-button"
                     type="button"
                     data-inventory-open
+                    style="border-left: 4px solid #2ed573;"
                 >
-                    <span>Mochila</span>
-                    <small>Inventario e equipe</small>
+                    <span style="color: #2ed573;">Mochila</span>
+                    <small>Inventário e equipe</small>
                 </button>
-                <button
+                <a
+                    href="{% url 'trainers:pokedex' %}"
                     class="menu-card menu-card-button"
-                    type="button"
-                    data-pokedex-open
+                    style="text-decoration: none; border-left: 4px solid #ff4757; display: flex; flex-direction: column; justify-content: center; align-items: center;"
                 >
-                    <span>Pokedex</span>
-                    <small>Pesquisar Pokemon</small>
-                </button>
+                    <span style="color: #ff6b81;">Pokédex</span>
+                    <small>Catálogo e coleção de Pokémon</small>
+                </a>
                 <button
                     class="menu-card menu-card-button"
                     type="button"
                     data-missions-open
+                    style="border-left: 4px solid #fadb14;"
                 >
-                    <span>Missoes</span>
+                    <span style="color: #fadb14;">Missões</span>
                     <small>Objetivos da jornada</small>
                 </button>
             </section>
         </article>
     </section>
 
-    <div class="modal-backdrop" data-profile-modal aria-hidden="true">
-        <section
-            class="pokedex-modal profile-modal game-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="profile-title"
-        >
-            <div class="pokedex-topbar">
-                <div>
-                    <p class="form-kicker">Modulo Perfil</p>
-                    <h2 id="profile-title">Editar treinador</h2>
-                </div>
-                <button class="icon-button" type="button" data-profile-close aria-label="Fechar Perfil">x</button>
-            </div>
-
-            <div class="profile-modal-body">
-                <aside class="profile-summary-card">
-                    <div class="avatar-badge profile-avatar" aria-hidden="true">{{ active_trainer.trainer_name|slice:":1" }}</div>
-                    <h3>{{ active_trainer.trainer_name }}</h3>
-                    <p>{{ active_trainer.get_clan_display }}</p>
-                    <dl>
-                        <div>
-                            <dt>Cidade</dt>
-                            <dd>{{ active_trainer.get_city_display }}</dd>
-                        </div>
-                        <div>
-                            <dt>Nivel</dt>
-                            <dd data-active-level>{{ xp_progress.level }}</dd>
-                        </div>
-                        <div>
-                            <dt>HP</dt>
-                            <dd>{{ active_trainer.current_hp }} / {{ active_trainer.max_hp }}</dd>
-                        </div>
-                    </dl>
-                </aside>
-
-                <div class="profile-edit-panels">
-                    <form class="modal-form" method="post" action="{% url 'trainers:profile_update' %}" novalidate>
-                        {% csrf_token %}
-                        <div>
-                            <p class="form-kicker">Identidade</p>
-                            <h3>Nome, cla e cidade</h3>
-                        </div>
-
-                        {% for field in profile_form %}
-                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                            {{ field }}
-                            {{ field.errors }}
-                        {% endfor %}
-
-                        <button class="primary-button compact-button" type="submit">Salvar perfil</button>
-                    </form>
-
-                    <form class="modal-form" method="post" action="{% url 'trainers:password_update' %}" novalidate>
-                        {% csrf_token %}
-                        <div>
-                            <p class="form-kicker">Seguranca</p>
-                            <h3>Trocar senha</h3>
-                        </div>
-
-                        {% for field in password_form %}
-                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                            {{ field }}
-                            {{ field.errors }}
-                        {% endfor %}
-
-                        <button class="primary-button compact-button" type="submit">Atualizar senha</button>
-                    </form>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <div class="modal-backdrop" data-support-modal aria-hidden="true">
+        <div class="modal-backdrop" data-support-modal aria-hidden="true">
         <section
             class="pokedex-modal support-modal"
             role="dialog"
@@ -277,60 +232,7 @@
         </section>
     </div>
 
-    <div
-        class="modal-backdrop"
-        data-pokedex-modal
-        data-search-url="{% url 'trainers:pokedex_search' %}"
-        data-register-url="{% url 'trainers:pokedex_register' %}"
-        aria-hidden="true"
-    >
-        <section
-            class="pokedex-modal pokedex-game-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="pokedex-title"
-        >
-            <div class="pokedex-topbar">
-                <div>
-                    <p class="form-kicker">Modulo Pokedex</p>
-                    <h2 id="pokedex-title">Pesquisar Pokemon</h2>
-                </div>
-                <button class="icon-button" type="button" data-pokedex-close aria-label="Fechar Pokedex">x</button>
-            </div>
-
-            <form class="pokedex-search" data-pokedex-form>
-                <label for="pokemon-search">Nome, numero ou tipo</label>
-                <div class="search-row">
-                    <input id="pokemon-search" name="q" type="search" placeholder="Ex.: Pikachu, #001, Water">
-                    <button class="primary-button compact-button" type="submit">Buscar</button>
-                </div>
-                <label class="filter-row" for="registered-filter">
-                    <input id="registered-filter" type="checkbox" data-registered-filter>
-                    <span>Mostrar apenas registrados</span>
-                </label>
-            </form>
-
-            <form
-                class="pokedex-search register-search"
-                method="post"
-                action="{% url 'trainers:pokedex_register' %}"
-                data-pokedex-register-form
-            >
-                {% csrf_token %}
-                <label for="pokemon-register-name">Registrar Pokemon pelo nome</label>
-                <div class="search-row">
-                    <input id="pokemon-register-name" name="pokemon_name" type="search" placeholder="Ex.: Charizard">
-                    <button class="primary-button compact-button" type="submit">Registrar</button>
-                </div>
-                <p class="field-hint" data-register-feedback></p>
-            </form>
-
-            <div class="pokedex-meta" data-pokedex-meta></div>
-            <div class="pokedex-results" data-pokedex-results aria-live="polite"></div>
-        </section>
-    </div>
-
-    <div class="modal-backdrop" data-inventory-modal aria-hidden="true">
+        <div class="modal-backdrop" data-inventory-modal aria-hidden="true">
         <section
             class="pokedex-modal inventory-modal"
             role="dialog"
@@ -487,8 +389,6 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{% static 'js/pokedex-modal.js' %}?v=20260930-2"></script>
-<script src="{% static 'js/profile-modal.js' %}?v=20260901-4"></script>
 <script src="{% static 'js/character-modal.js' %}?v=20260901-4"></script>
 <script src="{% static 'js/support-modal.js' %}?v=20260901-3"></script>
 <script src="{% static 'js/inventory-modal.js' %}?v=20260930-1"></script>

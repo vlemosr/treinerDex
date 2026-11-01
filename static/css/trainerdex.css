@@ -1826,3 +1826,481 @@ select:focus {
         gap: 8px;
     }
 }
+
+
+/* ==========================================================================
+   TRAINERDEX - MODERN VIBRANT THEME & UNIFIED CRUD DESIGN SYSTEM
+   ========================================================================== */
+
+:root {
+    --neon-blue: #00d2ff;
+    --neon-cyan: #00f2fe;
+    --neon-yellow: #fadb14;
+    --neon-orange: #ff9f43;
+    --neon-red: #ff4757;
+    --neon-green: #2ed573;
+    --neon-purple: #9b5de5;
+    --glass-panel: rgba(12, 18, 32, 0.88);
+    --glass-panel-subtle: rgba(18, 26, 46, 0.72);
+    --glass-card: rgba(15, 23, 42, 0.85);
+    --glass-input: rgba(7, 11, 22, 0.78);
+    --glass-border: rgba(255, 255, 255, 0.14);
+    --glass-border-glow: rgba(0, 210, 255, 0.4);
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-pill: 999px;
+}
+
+/* Base Body & Glow Enhancements */
+body {
+    background:
+        radial-gradient(ellipse at 15% 10%, rgba(0, 210, 255, 0.12), transparent 45%),
+        radial-gradient(ellipse at 85% 85%, rgba(255, 71, 87, 0.10), transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(250, 219, 20, 0.06), transparent 60%),
+        linear-gradient(135deg, #090d16 0%, #05070d 100%) !important;
+    color: #e6edf8;
+}
+
+.game-dashboard-page,
+.login-game-page {
+    background:
+        radial-gradient(circle at top right, rgba(0, 210, 255, 0.15), transparent 40rem),
+        radial-gradient(circle at bottom left, rgba(255, 71, 87, 0.12), transparent 40rem),
+        linear-gradient(180deg, rgba(5, 8, 16, 0.82) 0%, rgba(5, 8, 16, 0.92) 100%),
+        url("../img/trainerdex-dashboard-bg.png") center / cover fixed no-repeat !important;
+}
+
+/* Luminous Top Strips */
+.panel-top-strip {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--neon-red) 0%, var(--neon-orange) 25%, var(--neon-yellow) 50%, var(--neon-blue) 75%, var(--neon-green) 100%) !important;
+    box-shadow: 0 0 16px rgba(0, 210, 255, 0.6) !important;
+    border-top-left-radius: var(--radius-lg);
+    border-top-right-radius: var(--radius-lg);
+}
+
+/* Unified Panels (Friends, Profile, Admin, Modals) */
+.friends-panel,
+.admin-panel,
+.game-menu-panel,
+.game-modal,
+.game-login-card {
+    border-radius: var(--radius-lg) !important;
+    border: 1px solid var(--glass-border) !important;
+    background: var(--glass-panel) !important;
+    box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.6),
+        0 0 25px rgba(0, 210, 255, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+    backdrop-filter: blur(16px) !important;
+}
+
+.game-panel-header h1 {
+    color: #ffffff !important;
+    font-size: clamp(1.6rem, 4vw, 2.2rem) !important;
+    font-weight: 900 !important;
+    letter-spacing: -0.5px !important;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.form-kicker {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: var(--radius-pill);
+    background: rgba(0, 210, 255, 0.12);
+    border: 1px solid rgba(0, 210, 255, 0.35);
+    color: var(--neon-cyan) !important;
+    font-size: 0.75rem !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    margin-bottom: 8px !important;
+}
+
+/* Unified Form Controls (Inputs, Selects, Textareas) */
+.friend-form input,
+.friend-form select,
+.friend-form textarea,
+.game-login-card input,
+.game-login-card select,
+.modal-form input,
+.modal-form select,
+.modal-form textarea,
+.friend-filters input,
+.friend-filters select {
+    min-height: 48px;
+    border: 1px solid var(--glass-border) !important;
+    border-left: 4px solid var(--neon-blue) !important;
+    border-radius: var(--radius-sm) !important;
+    background: var(--glass-input) !important;
+    color: #ffffff !important;
+    font-size: 0.95rem;
+    padding: 10px 14px;
+    transition: all 0.25s ease;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+.friend-form textarea,
+.modal-form textarea {
+    min-height: 80px;
+}
+
+.friend-form input:focus,
+.friend-form select:focus,
+.friend-form textarea:focus,
+.game-login-card input:focus,
+.game-login-card select:focus,
+.modal-form input:focus,
+.modal-form select:focus,
+.modal-form textarea:focus,
+.friend-filters input:focus,
+.friend-filters select:focus {
+    border-color: var(--neon-cyan) !important;
+    border-left-color: var(--neon-cyan) !important;
+    box-shadow:
+        0 0 0 3px rgba(0, 210, 255, 0.25),
+        0 0 16px rgba(0, 210, 255, 0.3) !important;
+    outline: none !important;
+    background: rgba(10, 16, 32, 0.92) !important;
+}
+
+.friend-form label,
+.game-login-card label,
+.modal-form label {
+    color: #cbd5e1 !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
+    letter-spacing: 0.3px;
+    margin-bottom: 6px;
+    display: block;
+}
+
+/* Unified Buttons with Vibrant Hover Glows */
+.primary-button {
+    background: linear-gradient(135deg, #ffd166 0%, #fa8c16 100%) !important;
+    color: #0b0f19 !important;
+    font-weight: 800 !important;
+    border: none !important;
+    border-radius: var(--radius-sm) !important;
+    box-shadow: 0 4px 16px rgba(250, 140, 22, 0.4) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+}
+
+.primary-button:hover {
+    transform: translateY(-2px) scale(1.01) !important;
+    box-shadow:
+        0 8px 24px rgba(250, 140, 22, 0.55),
+        0 0 16px rgba(255, 209, 102, 0.6) !important;
+    filter: brightness(1.08);
+}
+
+.login-button {
+    background: linear-gradient(135deg, #00d2ff 0%, #0066ff 100%) !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    border: none !important;
+    border-radius: var(--radius-sm) !important;
+    box-shadow: 0 6px 20px rgba(0, 102, 255, 0.45) !important;
+    transition: all 0.25s ease !important;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+}
+
+.login-button:hover {
+    transform: translateY(-2px) scale(1.01) !important;
+    box-shadow:
+        0 10px 28px rgba(0, 102, 255, 0.6),
+        0 0 20px rgba(0, 210, 255, 0.7) !important;
+    filter: brightness(1.1);
+}
+
+.ghost-button {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #e2e8f0 !important;
+    border-radius: var(--radius-sm) !important;
+    font-weight: 700 !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer;
+}
+
+.ghost-button:hover {
+    background: rgba(255, 255, 255, 0.16) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+}
+
+.ghost-light-button {
+    background: rgba(0, 210, 255, 0.1) !important;
+    border: 1px solid rgba(0, 210, 255, 0.35) !important;
+    color: #66dcff !important;
+    border-radius: var(--radius-sm) !important;
+    font-weight: 700 !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer;
+}
+
+.ghost-light-button:hover {
+    background: rgba(0, 210, 255, 0.22) !important;
+    border-color: var(--neon-cyan) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 14px rgba(0, 210, 255, 0.35) !important;
+    transform: translateY(-1px);
+}
+
+.danger-button {
+    background: rgba(255, 71, 87, 0.18) !important;
+    border: 1px solid rgba(255, 71, 87, 0.5) !important;
+    color: #ff6b81 !important;
+    border-radius: var(--radius-sm) !important;
+    font-weight: 700 !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer;
+}
+
+.danger-button:hover {
+    background: rgba(255, 71, 87, 0.35) !important;
+    border-color: var(--neon-red) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 16px rgba(255, 71, 87, 0.45) !important;
+    transform: translateY(-1px);
+}
+
+/* Unified Friend & Admin Cards (Dark Glass, High Contrast) */
+.friend-card,
+.admin-user-card {
+    background: var(--glass-card) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-left: 5px solid var(--neon-blue) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
+    padding: 20px 24px !important;
+    margin-bottom: 14px !important;
+    transition: all 0.25s ease !important;
+}
+
+.friend-card:hover,
+.admin-user-card:hover {
+    border-color: rgba(0, 210, 255, 0.4) !important;
+    box-shadow:
+        0 14px 34px rgba(0, 0, 0, 0.6),
+        0 0 20px rgba(0, 210, 255, 0.15) !important;
+    transform: translateY(-2px) !important;
+}
+
+.friend-card h2,
+.admin-user-card h2 {
+    color: #ffffff !important;
+    font-size: 1.35rem !important;
+    font-weight: 800 !important;
+    margin: 6px 0 10px !important;
+}
+
+.friend-details,
+.admin-user-card .friend-details {
+    color: #94a3b8 !important;
+    font-size: 0.9rem !important;
+    gap: 8px 18px !important;
+}
+
+.friend-details strong {
+    color: #cbd5e1 !important;
+}
+
+.friend-notes {
+    background: rgba(0, 0, 0, 0.4) !important;
+    border-left: 3px solid rgba(250, 219, 20, 0.6) !important;
+    padding: 8px 12px !important;
+    border-radius: 4px !important;
+    color: #e2e8f0 !important;
+    font-size: 0.88rem !important;
+    margin-top: 10px !important;
+}
+
+/* Status Badges */
+.badge-status-added {
+    background: rgba(46, 213, 115, 0.18) !important;
+    border: 1px solid rgba(46, 213, 115, 0.5) !important;
+    color: var(--neon-green) !important;
+    padding: 3px 10px !important;
+    border-radius: var(--radius-pill) !important;
+    font-size: 0.75rem !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.badge-status-invited {
+    background: rgba(255, 177, 66, 0.18) !important;
+    border: 1px solid rgba(255, 177, 66, 0.5) !important;
+    color: var(--neon-orange) !important;
+    padding: 3px 10px !important;
+    border-radius: var(--radius-pill) !important;
+    font-size: 0.75rem !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* Character Cards in Dashboard */
+.character-card {
+    border-radius: var(--radius-md) !important;
+    border: 1px solid var(--glass-border) !important;
+    background: rgba(14, 20, 36, 0.75) !important;
+    transition: all 0.25s ease !important;
+}
+
+.character-card:hover {
+    border-color: var(--neon-blue) !important;
+    box-shadow: 0 8px 24px rgba(0, 210, 255, 0.25) !important;
+    transform: translateY(-3px) !important;
+}
+
+.character-card.is-selected {
+    border-color: var(--neon-cyan) !important;
+    background: linear-gradient(180deg, rgba(0, 210, 255, 0.16) 0%, rgba(14, 20, 36, 0.9) 100%) !important;
+    box-shadow:
+        0 0 0 2px var(--neon-cyan),
+        0 10px 30px rgba(0, 210, 255, 0.35) !important;
+}
+
+.character-avatar {
+    border-color: var(--neon-cyan) !important;
+    box-shadow: 0 0 16px rgba(0, 210, 255, 0.35) !important;
+}
+
+/* Dashboard HUD Stats Strip */
+.dashboard-stats-strip {
+    background: linear-gradient(135deg, rgba(14, 22, 42, 0.95), rgba(8, 12, 24, 0.95)) !important;
+    border: 1px solid rgba(0, 210, 255, 0.25) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow:
+        0 16px 40px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(0, 210, 255, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+.dashboard-stats-strip > div {
+    padding: 10px 8px;
+    border-radius: var(--radius-sm);
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.dashboard-stats-strip > div:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-2px);
+}
+
+/* Menu Grid Cards (Perfil, Mochila, Pokédex, Missões) */
+.menu-card {
+    border-radius: var(--radius-md) !important;
+    background: rgba(14, 20, 36, 0.85) !important;
+    border: 1px solid var(--glass-border) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35) !important;
+}
+
+.menu-card:hover {
+    transform: translateY(-4px) !important;
+    border-color: var(--neon-blue) !important;
+    box-shadow:
+        0 18px 36px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(0, 210, 255, 0.25) !important;
+}
+
+.menu-card[data-profile-open]:hover {
+    border-color: var(--neon-blue) !important;
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 210, 255, 0.35) !important;
+}
+
+.menu-card[data-inventory-open]:hover {
+    border-color: var(--neon-green) !important;
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.5), 0 0 20px rgba(46, 213, 115, 0.35) !important;
+}
+
+.menu-card[data-pokedex-open]:hover {
+    border-color: var(--neon-red) !important;
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 71, 87, 0.35) !important;
+}
+
+.menu-card[data-missions-open]:hover {
+    border-color: var(--neon-yellow) !important;
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.5), 0 0 20px rgba(250, 219, 20, 0.35) !important;
+}
+
+/* Top Nav Enhancements */
+.top-nav {
+    border-bottom: 1px solid rgba(0, 210, 255, 0.2) !important;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 210, 255, 0.08) !important;
+}
+
+.nav-tabs a,
+.nav-tabs strong,
+.nav-tabs button {
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+}
+
+.nav-tabs a:hover,
+.nav-tabs button:hover {
+    color: var(--neon-cyan) !important;
+    text-shadow: 0 0 8px rgba(0, 210, 255, 0.5);
+}
+
+.nav-avatar {
+    border-color: var(--neon-cyan) !important;
+    box-shadow: 0 0 14px rgba(0, 210, 255, 0.4) !important;
+}
+
+
+
+/* Standardized Modern Nav Tabs Capsule */
+.nav-tabs {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    background: rgba(10, 15, 28, 0.75) !important;
+    padding: 6px 10px !important;
+    border-radius: 999px !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+.nav-tab-item {
+    padding: 8px 18px !important;
+    border-radius: 999px !important;
+    font-size: 0.88rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    text-decoration: none !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    transition: all 0.25s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: none !important;
+}
+
+.nav-tab-item:hover {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    transform: translateY(-1px) !important;
+}
+
+.nav-tab-item.is-active {
+    color: #0b0f19 !important;
+    background: linear-gradient(135deg, #00d2ff 0%, #00f2fe 100%) !important;
+    box-shadow: 0 4px 14px rgba(0, 210, 255, 0.45) !important;
+    font-weight: 800 !important;
+}

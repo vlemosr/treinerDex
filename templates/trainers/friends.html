@@ -11,13 +11,16 @@
             <div class="avatar-badge nav-avatar" aria-hidden="true">{{ active_trainer.trainer_name|slice:":1" }}</div>
             <div>
                 <strong>{{ active_trainer.trainer_name }}</strong>
-                <span>{{ active_trainer.get_clan_display }} - Amigos</span>
+                <span style="color: #66dcff;">{{ active_trainer.get_clan_display }} - Amigos</span>
             </div>
         </div>
 
-        <div class="nav-tabs" aria-label="Secoes">
-            <a href="{% url 'trainers:dashboard' %}">Jogar</a>
-            <strong>Amigos</strong>
+        <div class="nav-tabs" aria-label="Navegação principal">
+            <a href="{% url 'trainers:home' %}" class="nav-tab-item">Início</a>
+            <a href="{% url 'trainers:dashboard' %}" class="nav-tab-item">Dashboard</a>
+            <a href="{% url 'trainers:pokedex' %}" class="nav-tab-item">Pokédex</a>
+            <a href="{% url 'trainers:friends' %}" class="nav-tab-item is-active">Amigos</a>
+            <a href="{% url 'trainers:profile_detail' %}" class="nav-tab-item">Perfil</a>
         </div>
 
         <form method="post" action="{% url 'accounts:logout' %}">
@@ -30,12 +33,20 @@
         <section class="friends-panel">
             <div class="panel-top-strip"></div>
             <header class="game-panel-header">
-                <p class="form-kicker">Rede de treinadores</p>
-                <h1>Amigos</h1>
+                <span class="form-kicker">Rede de Treinadores Pokémon</span>
+                <h1>Amigos & Consultas</h1>
+                <p style="color: #94a3b8; margin: 4px 0 20px; font-size: 0.95rem;">
+                    Cadastre novos amigos da jornada, aplique filtros de consulta e exporte relatórios consolidados.
+                </p>
             </header>
 
-            <form class="friend-form" method="post">
+            <!-- Formulário de Cadastro de Amigo -->
+            <form class="friend-form" method="post" style="background: rgba(10, 15, 28, 0.6); padding: 24px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.08);">
                 {% csrf_token %}
+                <h3 style="color: #fadb14; margin-top: 0; margin-bottom: 16px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+                    <span style="background: #fadb14; color: #0b0f19; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: bold;">+</span>
+                    Novo Amigo de Jornada
+                </h3>
                 {% if friend_form.non_field_errors %}<div class="form-errors">{{ friend_form.non_field_errors }}</div>{% endif %}
                 <div class="form-grid">
                     {% for field in friend_form %}
@@ -46,50 +57,97 @@
                         </div>
                     {% endfor %}
                 </div>
-                <div class="friend-actions">
-                    <button class="primary-button compact-button" type="submit">Adicionar amigo</button>
+                <div class="friend-actions" style="margin-top: 18px;">
+                    <button class="primary-button compact-button" type="submit" style="padding: 12px 28px; font-size: 0.95rem;">Adicionar amigo</button>
                 </div>
             </form>
 
-            <form class="friend-filters" method="get">
-                <div>
-                    <label for="friend-clan-filter">Filtrar por clã</label>
-                    <select id="friend-clan-filter" name="clan">
-                        <option value="">Todos os clãs</option>
-                        {% for value, label in clan_choices %}
-                            <option value="{{ value }}" {% if selected_clan == value %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <button class="ghost-light-button" type="submit">Filtrar</button>
-                {% if selected_clan %}<a href="{% url 'trainers:friends' %}">Limpar filtro</a>{% endif %}
-            </form>
+            <div class="login-divider" aria-hidden="true" style="margin: 32px 0 24px;"></div>
 
+            <!-- Barra de Consultas com Filtros e Exportação de Relatório -->
+            <div style="margin-bottom: 24px;">
+                <h3 style="color: #66dcff; margin-top: 0; margin-bottom: 14px; font-size: 1.15rem;">
+                    Filtrar & Consultar Treinadores
+                </h3>
+                <form class="friend-filters" method="get" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; background: rgba(10, 15, 28, 0.6); padding: 18px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.08);">
+                    <div style="flex: 1; min-width: 150px;">
+                        <label for="friend-search-filter" style="display: block; font-size: 0.82rem; margin-bottom: 6px; color: #cbd5e1; font-weight: 700;">Buscar por nome / apelido</label>
+                        <input type="text" id="friend-search-filter" name="q" value="{{ query|default:'' }}" placeholder="Ex: Ash, Misty, Brock..." style="width: 100%;">
+                    </div>
+
+                    <div style="min-width: 140px;">
+                        <label for="friend-clan-filter" style="display: block; font-size: 0.82rem; margin-bottom: 6px; color: #cbd5e1; font-weight: 700;">Clã</label>
+                        <select id="friend-clan-filter" name="clan" style="width: 100%;">
+                            <option value="">Todos os clãs</option>
+                            {% for value, label in clan_choices %}
+                                <option value="{{ value }}" {% if selected_clan == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div style="min-width: 140px;">
+                        <label for="friend-city-filter" style="display: block; font-size: 0.82rem; margin-bottom: 6px; color: #cbd5e1; font-weight: 700;">Cidade</label>
+                        <select id="friend-city-filter" name="city" style="width: 100%;">
+                            <option value="">Todas as cidades</option>
+                            {% for value, label in city_choices %}
+                                <option value="{{ value }}" {% if selected_city == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div style="min-width: 130px;">
+                        <label for="friend-status-filter" style="display: block; font-size: 0.82rem; margin-bottom: 6px; color: #cbd5e1; font-weight: 700;">Status</label>
+                        <select id="friend-status-filter" name="status" style="width: 100%;">
+                            <option value="">Todos</option>
+                            <option value="added" {% if selected_status == 'added' %}selected{% endif %}>Adicionado</option>
+                            <option value="invited" {% if selected_status == 'invited' %}selected{% endif %}>Convite enviado</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="ghost-light-button" type="submit" style="min-height: 48px; padding: 0 20px;">Filtrar</button>
+                        {% if selected_clan or selected_city or selected_status or query %}
+                            <a href="{% url 'trainers:friends' %}" class="ghost-button" style="text-decoration: none; min-height: 48px; display: inline-flex; align-items: center; padding: 0 16px;">Limpar</a>
+                        {% endif %}
+                        <a href="{% url 'trainers:friends_report_export' %}?{{ request.GET.urlencode }}" class="primary-button compact-button" style="text-decoration: none; min-height: 48px; display: inline-flex; align-items: center; padding: 0 18px; background: linear-gradient(135deg, #2ed573, #10ac84) !important; color: #ffffff !important; box-shadow: 0 4px 16px rgba(46, 213, 115, 0.4) !important;" title="Exportar resultado filtrado para arquivo CSV">
+                            Exportar Relatório
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Listagem dos Amigos (Read + Update + Delete) -->
             <section class="friends-list" aria-label="Amigos registrados">
                 {% if friends %}
                     {% for friend in friends %}
                         <article class="friend-card" data-friend-card>
-                            <div>
-                                <span>{{ friend.get_status_display }}</span>
+                            <div style="flex: 1;">
+                                <span class="{% if friend.status == 'added' %}badge-status-added{% else %}badge-status-invited{% endif %}">
+                                    {{ friend.get_status_display }}
+                                </span>
                                 <h2>{{ friend.name }}</h2>
                                 <div class="friend-details">
                                     <span><strong>Apelido:</strong> {{ friend.nickname|default:"Não informado" }}</span>
-                                    <span><strong>Clã:</strong> {{ friend.get_clan_display|default:"Não informado" }}</span>
-                                    <span><strong>Cidade:</strong> {{ friend.get_city_display|default:"Não informada" }}</span>
-                                    <span><strong>Nível:</strong> {{ friend.level }}</span>
+                                    <span><strong style="color: #66dcff;">Clã:</strong> {{ friend.get_clan_display|default:"Não informado" }}</span>
+                                    <span><strong style="color: #cbd5e1;">Cidade:</strong> {{ friend.get_city_display|default:"Não informada" }}</span>
+                                    <span><strong style="color: #fadb14;">Nível:</strong> {{ friend.level }}</span>
                                 </div>
-                                {% if friend.notes %}<p class="friend-notes">{{ friend.notes }}</p>{% endif %}
+                                {% if friend.notes %}
+                                    <p class="friend-notes">{{ friend.notes }}</p>
+                                {% endif %}
                             </div>
                             <div class="friend-card-actions">
+                                <a class="ghost-light-button dark-action" href="{% url 'trainers:friend_update' friend.id %}" style="text-decoration: none; display: inline-flex; align-items: center; padding: 8px 16px; font-size: 0.85rem;">Editar</a>
                                 <form method="post" action="{% url 'trainers:friend_invite' friend.id %}">
                                     {% csrf_token %}
-                                    <button class="ghost-light-button dark-action" type="submit">Enviar convite</button>
+                                    <button class="ghost-light-button dark-action" type="submit" style="padding: 8px 16px; font-size: 0.85rem;">Enviar convite</button>
                                 </form>
                                 <button
                                     class="danger-button"
                                     type="button"
                                     data-delete-friend
                                     data-delete-url="{% url 'trainers:friend_delete' friend.id %}"
+                                    style="padding: 8px 16px; font-size: 0.85rem;"
                                 >
                                     Excluir
                                 </button>
@@ -97,7 +155,7 @@
                         </article>
                     {% endfor %}
                 {% else %}
-                    <p class="empty-state dark-empty">Nenhum amigo registrado ainda.</p>
+                    <p class="empty-state dark-empty">{% if selected_clan or selected_city or selected_status or query %}Nenhum amigo encontrado para os filtros selecionados.{% else %}Nenhum amigo registrado ainda.{% endif %}</p>
                 {% endif %}
             </section>
         </section>

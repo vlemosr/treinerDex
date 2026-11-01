@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Editar Pokémon na Pokédex | TrainerDex{% endblock %}
+{% block body_class %}game-dashboard-page{% endblock %}
+
+{% block content %}
+<section class="friends-page">
+    <nav class="top-nav" aria-label="Navegacao principal">
+        <div class="nav-player">
+            <div class="avatar-badge nav-avatar" aria-hidden="true">{{ active_trainer.trainer_name|slice:":1" }}</div>
+            <div>
+                <strong>{{ active_trainer.trainer_name }}</strong>
+                <span style="color: #66dcff;">{{ active_trainer.get_clan_display }} - Editar Registro Pokédex</span>
+            </div>
+        </div>
+
+        <div class="nav-tabs" aria-label="Navegação principal">
+            <a href="{% url 'trainers:home' %}" class="nav-tab-item">Início</a>
+            <a href="{% url 'trainers:dashboard' %}" class="nav-tab-item">Dashboard</a>
+            <a href="{% url 'trainers:pokedex' %}" class="nav-tab-item is-active">Pokédex</a>
+            <a href="{% url 'trainers:friends' %}" class="nav-tab-item">Amigos</a>
+            <a href="{% url 'trainers:profile_detail' %}" class="nav-tab-item">Perfil</a>
+        </div>
+
+        <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button class="ghost-button" type="submit">Sair</button>
+        </form>
+    </nav>
+
+    <main class="friends-shell">
+        <section class="friends-panel" style="max-width: 680px; margin: 0 auto;">
+            <div class="panel-top-strip"></div>
+            <header class="game-panel-header">
+                <span class="form-kicker">Registro Pokédex</span>
+                <h1>Editar #{{ pokemon.number|stringformat:"03d" }} - {{ pokemon.name }}</h1>
+                <p style="color: #94a3b8; margin: 4px 0 24px; font-size: 0.95rem;">
+                    Atualize o apelido, notas de batalha/captura e preferência de favorito deste Pokémon.
+                </p>
+            </header>
+
+            <form class="friend-form" method="post" novalidate style="background: rgba(10, 15, 28, 0.6); padding: 24px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.08);">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="form-errors">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <div class="form-grid">
+                    <div class="field-group friend-notes-field">
+                        <label for="{{ form.nickname.id_for_label }}">{{ form.nickname.label }}</label>
+                        {{ form.nickname }}
+                        {{ form.nickname.errors }}
+                    </div>
+
+                    <div class="field-group friend-notes-field">
+                        <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+                        {{ form.notes }}
+                        {{ form.notes.errors }}
+                    </div>
+
+                    <div class="field-group friend-notes-field" style="display: flex; align-items: center; gap: 10px; min-height: auto; margin-top: 6px;">
+                        {{ form.is_favorite }}
+                        <label for="{{ form.is_favorite.id_for_label }}" style="margin: 0; cursor: pointer;">{{ form.is_favorite.label }}</label>
+                        {{ form.is_favorite.errors }}
+                    </div>
+                </div>
+
+                <div class="friend-actions" style="display: flex; gap: 14px; margin-top: 26px;">
+                    <button class="primary-button compact-button" type="submit" style="padding: 12px 32px; font-size: 1rem; background: linear-gradient(135deg, #ff4757, #ee5253) !important; color: #ffffff !important;">
+                        Salvar Alterações
+                    </button>
+                    <a class="ghost-light-button" href="{% url 'trainers:pokedex' %}" style="text-decoration: none; display: inline-flex; align-items: center; padding: 12px 24px; font-size: 0.95rem;">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </section>
+    </main>
+</section>
+{% endblock %}

@@ -9,13 +9,13 @@
         <span>TRAINER</span><span>DEX</span>
     </div>
 
-    <form class="game-login-card character-create-card" method="post" novalidate>
+    <form class="game-login-card character-create-card" method="post" novalidate style="position: relative; overflow: hidden; border-radius: 14px; padding: 36px 36px 32px;">
+        <div class="panel-top-strip"></div>
         {% csrf_token %}
-        <div class="login-divider" aria-hidden="true"></div>
-        <div class="setup-header">
-            <span class="form-kicker">Registro de treinador</span>
-            <h1>Crie seu personagem</h1>
-            <p>Escolha a identidade, cidade e clã do seu novo treinador.</p>
+        <div class="setup-header" style="text-align: center; margin-bottom: 24px;">
+            <span class="form-kicker">Registro de Treinador</span>
+            <h1 style="color: #ffffff; font-size: 2rem; margin: 8px 0; font-weight: 900;">Crie seu Personagem</h1>
+            <p style="color: #94a3b8; margin: 0; font-size: 0.95rem;">Escolha a identidade, cidade e clã do seu novo treinador Pokémon.</p>
         </div>
 
         {% if form.non_field_errors %}
@@ -32,7 +32,7 @@
             {% endfor %}
         </div>
 
-        <button class="login-button" type="submit">Criar personagem</button>
+        <button class="login-button" type="submit" style="margin-top: 28px; min-height: 52px; font-size: 1.05rem;">Criar personagem</button>
     </form>
 </section>
 {% endblock %}

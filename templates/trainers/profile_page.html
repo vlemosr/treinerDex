@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Perfil do Treinador | TrainerDex{% endblock %}
+{% block body_class %}game-dashboard-page{% endblock %}
+
+{% block content %}
+<section class="friends-page">
+    <nav class="top-nav" aria-label="Navegacao principal">
+        <div class="nav-player">
+            <div class="avatar-badge nav-avatar" aria-hidden="true">{{ active_trainer.trainer_name|slice:":1" }}</div>
+            <div>
+                <strong>{{ active_trainer.trainer_name }}</strong>
+                <span style="color: #66dcff;">{{ active_trainer.get_clan_display }} - Perfil</span>
+            </div>
+        </div>
+
+        <div class="nav-tabs" aria-label="Navegação principal">
+            <a href="{% url 'trainers:home' %}" class="nav-tab-item">Início</a>
+            <a href="{% url 'trainers:dashboard' %}" class="nav-tab-item">Dashboard</a>
+            <a href="{% url 'trainers:pokedex' %}" class="nav-tab-item">Pokédex</a>
+            <a href="{% url 'trainers:friends' %}" class="nav-tab-item">Amigos</a>
+            <a href="{% url 'trainers:profile_detail' %}" class="nav-tab-item is-active">Perfil</a>
+        </div>
+
+        <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button class="ghost-button" type="submit">Sair</button>
+        </form>
+    </nav>
+
+    <main class="friends-shell">
+        <section class="friends-panel" style="max-width: 980px; margin: 0 auto;">
+            <div class="panel-top-strip"></div>
+            <header class="game-panel-header">
+                <span class="form-kicker">Identidade & Personagens</span>
+                <h1>Gerenciamento de Perfil</h1>
+                <p style="color: #94a3b8; margin: 4px 0 24px; font-size: 0.95rem;">
+                    Alterne entre seus personagens, edite dados do treinador ativo, consulte sua licença e gerencie credenciais da conta.
+                </p>
+            </header>
+
+            <!-- Seção de Personagens da Conta -->
+            <div style="margin-bottom: 32px;">
+                <h3 style="color: #ffd166; margin-top: 0; margin-bottom: 14px; font-size: 1.15rem; display: flex; align-items: center; justify-content: space-between;">
+                    <span>Meus Personagens</span>
+                    <a href="{% url 'trainers:profile_create' %}" class="primary-button compact-button" style="text-decoration: none; display: inline-flex; align-items: center; padding: 6px 16px; font-size: 0.82rem; width: auto; margin: 0;">
+                        + Criar Novo Personagem
+                    </a>
+                </h3>
+
+                <div class="character-roster" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));">
+                    {% for trainer in trainer_profiles %}
+                        <div class="character-card-wrap">
+                            <form method="post" action="{% url 'trainers:profile_select' trainer.id %}">
+                                {% csrf_token %}
+                                <button class="character-card {% if trainer.id == active_trainer.id %}is-selected{% endif %}" type="submit" style="min-height: 140px; padding: 14px;">
+                                    <div class="avatar-badge character-avatar" aria-hidden="true" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                                        {{ trainer.trainer_name|slice:":1" }}
+                                    </div>
+                                    <span style="font-size: 1rem; margin-top: 6px;">{{ trainer.trainer_name }}</span>
+                                    <small>{{ trainer.get_clan_display }}</small>
+                                    <strong style="color: #ffd166; font-size: 0.9rem;">Nv. {{ trainer.level }}</strong>
+                                    {% if trainer.id == active_trainer.id %}
+                                        <span style="background: rgba(0, 210, 255, 0.2); color: #00d2ff; border: 1px solid rgba(0, 210, 255, 0.5); border-radius: 999px; padding: 2px 8px; font-size: 0.68rem; font-weight: 800; margin-top: 4px;">Ativo</span>
+                                    {% endif %}
+                                </button>
+                            </form>
+                            {% if not forloop.first %}
+                                <form class="delete-character-form" method="post" action="{% url 'trainers:profile_delete' trainer.id %}" onsubmit="return confirm('Deseja excluir o personagem {{ trainer.trainer_name }}?');" style="position: absolute; top: 6px; right: 6px; z-index: 2;">
+                                    {% csrf_token %}
+                                    <button type="submit" aria-label="Excluir {{ trainer.trainer_name }}" style="background: rgba(255, 71, 87, 0.8); border: none; color: white; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 14px; line-height: 1;">&times;</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="login-divider" aria-hidden="true" style="margin: 28px 0 28px;"></div>
+
+            <!-- Dados e Edição do Treinador Ativo -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-bottom: 32px;">
+                <!-- Cartão & Resumo do Treinador -->
+                <div style="background: rgba(10, 15, 28, 0.6); padding: 24px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.08); border-left: 5px solid #00d2ff;">
+                    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
+                        <div class="avatar-badge profile-avatar" aria-hidden="true" style="width: 68px; height: 68px; font-size: 1.8rem; border-color: #00d2ff;">
+                            {{ active_trainer.trainer_name|slice:":1" }}
+                        </div>
+                        <div>
+                            <h2 style="color: #ffffff; margin: 0 0 4px; font-size: 1.4rem;">{{ active_trainer.trainer_name }}</h2>
+                            <span style="color: #66dcff; font-weight: 700; font-size: 0.95rem;">Clã {{ active_trainer.get_clan_display }}</span>
+                        </div>
+                    </div>
+
+                    <dl style="display: grid; gap: 12px; margin: 0;">
+                        <div style="background: rgba(0,0,0,0.4); padding: 10px 14px; border-radius: 6px; border-left: 3px solid #00d2ff;">
+                            <dt style="color: #94a3b8; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">Código da Licença</dt>
+                            <dd style="color: #ffffff; font-weight: 900; margin: 2px 0 0; font-size: 1.05rem;">{{ trainer_card.license_code }}</dd>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.4); padding: 10px 14px; border-radius: 6px; border-left: 3px solid #ffd166;">
+                            <dt style="color: #94a3b8; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">Cidade & Região</dt>
+                            <dd style="color: #ffffff; font-weight: 700; margin: 2px 0 0;">{{ active_trainer.get_city_display }} ({{ trainer_card.region }})</dd>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.4); padding: 10px 14px; border-radius: 6px; border-left: 3px solid #2ed573;">
+                            <dt style="color: #94a3b8; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">Nível & Vida</dt>
+                            <dd style="color: #ffffff; font-weight: 700; margin: 2px 0 0;">Nível {{ active_trainer.level }} &bull; HP: {{ active_trainer.current_hp }} / {{ active_trainer.max_hp }}</dd>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.4); padding: 10px 14px; border-radius: 6px; border-left: 3px solid #ff4757;">
+                            <dt style="color: #94a3b8; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">Insígnias Conquistadas</dt>
+                            <dd style="color: #ffffff; font-weight: 700; margin: 2px 0 0;">{{ trainer_card.badges_count }} Insígnias</dd>
+                        </div>
+                    </dl>
+                </div>
+
+                <!-- Formulário de Edição do Perfil -->
+                <form class="friend-form" method="post" action="{% url 'trainers:profile_update' %}" style="background: rgba(10, 15, 28, 0.6); padding: 24px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.08);">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'trainers:profile_detail' %}">
+                    <h3 style="color: #00d2ff; margin-top: 0; margin-bottom: 16px; font-size: 1.15rem;">
+                        Editar Dados do Treinador
+                    </h3>
+
+                    <div style="display: grid; gap: 14px;">
+                        {% for field in profile_form %}
+                            <div>
+                                <label for="{{ field.id_for_label }}" style="display: block; margin-bottom: 6px; color: #cbd5e1; font-weight: 700; font-size: 0.85rem;">
+                                    {{ field.label }}
+                                </label>
+                                {{ field }}
+                                {{ field.errors }}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <button class="primary-button" type="submit" style="margin-top: 20px; padding: 12px 24px; font-size: 0.95rem;">
+                        Salvar Dados do Treinador
+                    </button>
+                </form>
+            </div>
+
+            <!-- Formulário de Alteração de Senha -->
+            <div style="background: rgba(10, 15, 28, 0.6); padding: 24px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.08); border-left: 5px solid #ffd166;">
+                <h3 style="color: #ffd166; margin-top: 0; margin-bottom: 8px; font-size: 1.15rem;">
+                    Segurança da Conta &bull; Alterar Senha
+                </h3>
+                <p style="color: #94a3b8; font-size: 0.9rem; margin: 0 0 16px;">
+                    Altere sua senha de acesso ao TrainerDex para manter sua conta protegida.
+                </p>
+
+                <form method="post" action="{% url 'trainers:password_update' %}">
+                    {% csrf_token %}
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+                        {% for field in password_form %}
+                            <div>
+                                <label for="{{ field.id_for_label }}" style="display: block; margin-bottom: 6px; color: #cbd5e1; font-weight: 700; font-size: 0.85rem;">
+                                    {{ field.label }}
+                                </label>
+                                {{ field }}
+                                {{ field.errors }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button class="ghost-light-button" type="submit" style="margin-top: 18px; padding: 10px 24px; min-height: 44px;">
+                        Atualizar Senha
+                    </button>
+                </form>
+            </div>
+        </section>
+    </main>
+</section>
+{% endblock %}

@@ -102,17 +102,28 @@ def get_mission(mission_key):
 
 
 def complete_mission_for_trainer(trainer, mission_key):
-    from ..models import MissionCompletion
+    from ..models import Mission, MissionCompletion
 
     mission = get_mission(mission_key)
     if mission is None:
         return None, False, None
 
+    mission_obj, _ = Mission.objects.get_or_create(
+        key=mission['key'],
+        defaults={
+            'title': mission['title'],
+            'xp_reward': mission['xp_reward'],
+        },
+    )
+
     completion, created = MissionCompletion.objects.get_or_create(
         trainer=trainer,
         mission_key=mission['key'],
-        defaults={'xp_reward': mission['xp_reward']},
+        defaults={'xp_reward': mission['xp_reward'], 'mission': mission_obj},
     )
+    if completion.mission_id is None:
+        completion.mission = mission_obj
+        completion.save(update_fields=['mission'])
 
     progress = None
     if created:

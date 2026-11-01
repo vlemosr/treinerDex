@@ -59,8 +59,62 @@ class TrainerProfile(models.Model):
         verbose_name = 'perfil de treinador'
         verbose_name_plural = 'perfis de treinadores'
 
+    completed_missions = models.ManyToManyField(
+        'Mission',
+        through='MissionCompletion',
+        related_name='completed_by_trainers',
+        blank=True,
+    )
+
     def __str__(self):
         return self.trainer_name
+
+    def get_or_create_card(self):
+        card, _ = TrainerCard.objects.get_or_create(
+            trainer=self,
+            defaults={
+                'license_code': f'TC-{self.id:05d}',
+                'region': 'Kanto',
+                'badges_count': 0,
+            },
+        )
+        return card
+
+
+
+class TrainerCard(models.Model):
+    trainer = models.OneToOneField(
+        'TrainerProfile',
+        on_delete=models.CASCADE,
+        related_name='card',
+        verbose_name='treinador',
+    )
+    license_code = models.CharField('código de licença', max_length=20, unique=True)
+    region = models.CharField('região de origem', max_length=50, default='Kanto')
+    badges_count = models.PositiveSmallIntegerField('insígnias conquistadas', default=0)
+    biography = models.TextField('biografia', blank=True, default='')
+    issued_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'cartão de treinador'
+        verbose_name_plural = 'cartões de treinador'
+
+    def __str__(self):
+        return f'Cartão de {self.trainer.trainer_name} ({self.license_code})'
+
+
+class Mission(models.Model):
+    key = models.CharField('identificador', max_length=80, unique=True)
+    title = models.CharField('título', max_length=120)
+    xp_reward = models.PositiveIntegerField('recompensa XP')
+    description = models.TextField('descrição', blank=True, default='')
+
+    class Meta:
+        verbose_name = 'missão'
+        verbose_name_plural = 'missões'
+
+    def __str__(self):
+        return self.title
 
 
 class PokedexRegistration(models.Model):
@@ -70,6 +124,9 @@ class PokedexRegistration(models.Model):
         related_name='pokedex_registrations',
     )
     pokemon_number = models.PositiveIntegerField()
+    nickname = models.CharField('apelido do pokemon', max_length=60, blank=True, default='')
+    notes = models.TextField('anotações', blank=True, default='')
+    is_favorite = models.BooleanField('favorito', default=False)
     registered_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -128,6 +185,13 @@ class MissionCompletion(models.Model):
         TrainerProfile,
         on_delete=models.CASCADE,
         related_name='mission_completions',
+    )
+    mission = models.ForeignKey(
+        Mission,
+        on_delete=models.CASCADE,
+        related_name='completions',
+        null=True,
+        blank=True,
     )
     mission_key = models.CharField(max_length=80)
     xp_reward = models.PositiveIntegerField()

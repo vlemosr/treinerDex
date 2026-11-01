@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Pokédex | TrainerDex{% endblock %}
+{% block body_class %}game-dashboard-page{% endblock %}
+
+{% block content %}
+<section class="friends-page">
+    <nav class="top-nav" aria-label="Navegacao principal">
+        <div class="nav-player">
+            <div class="avatar-badge nav-avatar" aria-hidden="true">{{ active_trainer.trainer_name|slice:":1" }}</div>
+            <div>
+                <strong>{{ active_trainer.trainer_name }}</strong>
+                <span style="color: #66dcff;">{{ active_trainer.get_clan_display }} - Pokédex</span>
+            </div>
+        </div>
+
+        <div class="nav-tabs" aria-label="Navegação principal">
+            <a href="{% url 'trainers:home' %}" class="nav-tab-item">Início</a>
+            <a href="{% url 'trainers:dashboard' %}" class="nav-tab-item">Dashboard</a>
+            <a href="{% url 'trainers:pokedex' %}" class="nav-tab-item is-active">Pokédex</a>
+            <a href="{% url 'trainers:friends' %}" class="nav-tab-item">Amigos</a>
+            <a href="{% url 'trainers:profile_detail' %}" class="nav-tab-item">Perfil</a>
+        </div>
+
+        <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button class="ghost-button" type="submit">Sair</button>
+        </form>
+    </nav>
+
+    <main class="friends-shell">
+        <section class="friends-panel">
+            <div class="panel-top-strip"></div>
+            <header class="game-panel-header">
+                <span class="form-kicker">Catálogo & Coleção Pokémon</span>
+                <h1>Pokédex de {{ active_trainer.trainer_name }}</h1>
+                <p style="color: #94a3b8; margin: 4px 0 20px; font-size: 0.95rem;">
+                    Cadastre capturas, gerencie apelidos, anote observações e organize seus Pokémons favoritos. Total registrado: <strong style="color: #ffd166;">{{ total_registered }}</strong> de 649.
+                </p>
+            </header>
+
+            <!-- Formulário para Registrar Novo Pokémon -->
+            <form class="friend-form" method="post" style="background: rgba(10, 15, 28, 0.6); padding: 24px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.08);">
+                {% csrf_token %}
+                <h3 style="color: #ff6b81; margin-top: 0; margin-bottom: 16px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+                    <span style="background: #ff4757; color: #ffffff; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: bold;">+</span>
+                    Registrar Pokémon na Pokédex
+                </h3>
+
+                {% if form.non_field_errors %}
+                    <div class="form-errors">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <div class="form-grid">
+                    <div class="field-group">
+                        <label for="{{ form.pokemon_number.id_for_label }}">{{ form.pokemon_number.label }}</label>
+                        {{ form.pokemon_number }}
+                        {{ form.pokemon_number.errors }}
+                    </div>
+                    <div class="field-group">
+                        <label for="{{ form.nickname.id_for_label }}">{{ form.nickname.label }}</label>
+                        {{ form.nickname }}
+                        {{ form.nickname.errors }}
+                    </div>
+                    <div class="field-group friend-notes-field">
+                        <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+                        {{ form.notes }}
+                        {{ form.notes.errors }}
+                    </div>
+                    <div class="field-group friend-notes-field" style="display: flex; align-items: center; gap: 10px; min-height: auto; margin-top: 6px;">
+                        {{ form.is_favorite }}
+                        <label for="{{ form.is_favorite.id_for_label }}" style="margin: 0; cursor: pointer;">{{ form.is_favorite.label }}</label>
+                        {{ form.is_favorite.errors }}
+                    </div>
+                </div>
+
+                <div class="friend-actions" style="margin-top: 18px;">
+                    <button class="primary-button compact-button" type="submit" style="padding: 12px 28px; font-size: 0.95rem; background: linear-gradient(135deg, #ff4757, #ee5253) !important; color: #ffffff !important; box-shadow: 0 4px 16px rgba(255, 71, 87, 0.4) !important;">
+                        Registrar Pokémon
+                    </button>
+                </div>
+            </form>
+
+            <div class="login-divider" aria-hidden="true" style="margin: 32px 0 24px;"></div>
+
+            <!-- Busca & Filtros -->
+            <div style="margin-bottom: 24px;">
+                <h3 style="color: #66dcff; margin-top: 0; margin-bottom: 14px; font-size: 1.15rem;">
+                    Buscar Pokémons Registrados
+                </h3>
+                <form class="friend-filters" method="get" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; background: rgba(10, 15, 28, 0.6); padding: 18px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.08);">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label for="pokedex-search-input" style="display: block; font-size: 0.82rem; margin-bottom: 6px; color: #cbd5e1; font-weight: 700;">Nome, número, apelido ou tipo</label>
+                        <input type="text" id="pokedex-search-input" name="q" value="{{ query|default:'' }}" placeholder="Ex: Pikachu, 25, Charizard, elétrico..." style="width: 100%;">
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 8px; min-height: 48px;">
+                        <input type="checkbox" id="favorite-filter" name="favorite" value="1" {% if only_favorite %}checked{% endif %} style="min-height: auto; width: 18px; height: 18px; cursor: pointer;">
+                        <label for="favorite-filter" style="margin: 0; color: #fadb14; font-weight: 700; font-size: 0.9rem; cursor: pointer;">Apenas Favoritos</label>
+                    </div>
+
+                    <div style="display: flex; gap: 8px;">
+                        <button class="ghost-light-button" type="submit" style="min-height: 48px; padding: 0 20px;">Filtrar</button>
+                        {% if query or only_favorite %}
+                            <a href="{% url 'trainers:pokedex' %}" class="ghost-button" style="text-decoration: none; min-height: 48px; display: inline-flex; align-items: center; padding: 0 16px;">Limpar</a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+
+            <!-- Lista de Pokémons Registrados -->
+            <section class="friends-list" aria-label="Pokémons registrados">
+                {% if items %}
+                    {% for item in items %}
+                        <article class="friend-card" style="border-left: 5px solid #ff4757 !important; gap: 20px;">
+                            <div style="display: flex; align-items: center; gap: 18px;">
+                                {% if item.pokemon.image %}
+                                    <div style="width: 76px; height: 76px; background: rgba(0, 0, 0, 0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255, 71, 87, 0.5); box-shadow: 0 0 12px rgba(255, 71, 87, 0.25);">
+                                        <img src="{{ item.pokemon.image }}" alt="{{ item.pokemon.name }}" style="max-width: 68px; max-height: 68px; object-fit: contain;">
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                        <span style="background: rgba(255, 71, 87, 0.18); color: #ff6b81; border: 1px solid rgba(255, 71, 87, 0.4); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">
+                                            #{{ item.registration.pokemon_number|stringformat:"03d" }}
+                                        </span>
+                                        {% if item.registration.is_favorite %}
+                                            <span style="background: rgba(250, 219, 20, 0.2); color: #fadb14; border: 1px solid rgba(250, 219, 20, 0.5); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">
+                                                ★ Favorito
+                                            </span>
+                                        {% endif %}
+                                    </div>
+
+                                    <h2 style="margin: 2px 0 6px;">{{ item.pokemon.name }}</h2>
+
+                                    <div class="friend-details">
+                                        {% if item.registration.nickname %}
+                                            <span><strong style="color: #66dcff;">Apelido:</strong> {{ item.registration.nickname }}</span>
+                                        {% endif %}
+                                        <span><strong style="color: #cbd5e1;">Tipos:</strong> {{ item.pokemon.types|join:", "|title }}</span>
+                                        <span><strong style="color: #94a3b8;">Registrado em:</strong> {{ item.registration.registered_at|date:"d/m/Y" }}</span>
+                                    </div>
+
+                                    {% if item.registration.notes %}
+                                        <p class="friend-notes" style="border-left-color: #ff4757 !important;">{{ item.registration.notes }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="friend-card-actions">
+                                <a class="ghost-light-button dark-action" href="{% url 'trainers:pokedex_update' item.registration.id %}" style="text-decoration: none; display: inline-flex; align-items: center; padding: 8px 16px; font-size: 0.85rem;">
+                                    Editar
+                                </a>
+                                <form method="post" action="{% url 'trainers:pokedex_delete' item.registration.id %}" onsubmit="return confirm('Deseja realmente remover {{ item.pokemon.name }} da Pokédex?');" style="margin: 0;">
+                                    {% csrf_token %}
+                                    <button class="danger-button" type="submit" style="padding: 8px 16px; font-size: 0.85rem;">
+                                        Excluir
+                                    </button>
+                                </form>
+                            </div>
+                        </article>
+                    {% endfor %}
+                {% else %}
+                    <p class="empty-state dark-empty">
+                        {% if query or only_favorite %}
+                            Nenhum Pokémon encontrado com os filtros atuais.
+                        {% else %}
+                            Nenhum Pokémon registrado na sua Pokédex ainda. Utilize o formulário acima para registrar suas capturas!
+                        {% endif %}
+                    </p>
+                {% endif %}
+            </section>
+        </section>
+    </main>
+</section>
+{% endblock %}

@@ -1,3 +1,7 @@
+import csv
+from io import StringIO
+from django.http import HttpResponse
+from django.db.models import Avg, Count, Sum, Q
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
@@ -6,7 +10,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from .forms import FriendForm, TrainerProfileForm, TrainerProfileUpdateForm
+from .forms import FriendForm, PokedexRegistrationForm, PokedexRegistrationUpdateForm, TrainerProfileForm, TrainerProfileUpdateForm
 from .models import Friend, PokedexRegistration, TrainerProfile, TrainerTeamMember
 from .services.experience import get_level_progress, sync_trainer_experience
 from .services.inventory import (
@@ -19,6 +23,10 @@ from .services.missions import complete_mission_for_trainer, get_missions_for_tr
 from .services.pokedex import find_pokemon_by_name, find_pokemon_by_number, search_pokemon
 
 
+def home(request):
+    return render(request, 'trainers/home.html')
+
+
 @login_required
 def dashboard(request):
     active_trainer = _get_active_trainer(request)
@@ -27,8 +35,21 @@ def dashboard(request):
 
     xp_progress = sync_trainer_experience(active_trainer)
 
+    stats = {
+        'total_inventory_items': active_trainer.inventory_items.aggregate(total=Sum('quantity'))['total'] or 0,
+        'unique_inventory_slots': active_trainer.inventory_items.aggregate(count=Count('id'))['count'] or 0,
+        'team_count': active_trainer.team_members.aggregate(count=Count('id'))['count'] or 0,
+        'pokedex_count': active_trainer.pokedex_registrations.aggregate(count=Count('id'))['count'] or 0,
+        'missions_completed_count': active_trainer.mission_completions.aggregate(count=Count('id'))['count'] or 0,
+        'missions_xp_total': active_trainer.mission_completions.aggregate(total_xp=Sum('xp_reward'))['total_xp'] or 0,
+        'friends_count': active_trainer.friends.aggregate(count=Count('id'))['count'] or 0,
+        'friends_avg_level': round(active_trainer.friends.aggregate(avg=Avg('level'))['avg'] or 0, 1),
+    }
+
     context = {
         'active_trainer': active_trainer,
+        'trainer_card': active_trainer.get_or_create_card(),
+        'stats': stats,
         'xp_progress': xp_progress,
         'inventory_slots': get_inventory_slots(active_trainer),
         'team_slots': get_team_slots(active_trainer),
@@ -295,8 +316,18 @@ def friends_page(request):
 
     friends = active_trainer.friends.all()
     selected_clan = request.GET.get('clan', '').strip()
+    selected_city = request.GET.get('city', '').strip()
+    selected_status = request.GET.get('status', '').strip()
+    query = request.GET.get('q', '').strip()
+
     if selected_clan:
         friends = friends.filter(clan=selected_clan)
+    if selected_city:
+        friends = friends.filter(city=selected_city)
+    if selected_status:
+        friends = friends.filter(status=selected_status)
+    if query:
+        friends = friends.filter(Q(name__icontains=query) | Q(nickname__icontains=query))
 
     return render(
         request,
@@ -306,7 +337,11 @@ def friends_page(request):
             'friends': friends,
             'friend_form': friend_form,
             'clan_choices': TrainerProfile.CLAN_CHOICES,
+            'city_choices': TrainerProfile.CITY_CHOICES,
             'selected_clan': selected_clan,
+            'selected_city': selected_city,
+            'selected_status': selected_status,
+            'query': query,
         },
     )
 
@@ -323,6 +358,86 @@ def friend_invite(request, friend_id):
     friend.save(update_fields=['status'])
     return redirect('trainers:friends')
 
+
+
+@login_required
+def friend_update(request, friend_id):
+    active_trainer = _get_active_trainer(request)
+    if active_trainer is None:
+        return redirect('trainers:profile_create')
+
+    friend = get_object_or_404(active_trainer.friends, id=friend_id)
+
+    if request.method == 'POST':
+        form = FriendForm(request.POST, instance=friend)
+        if form.is_valid():
+            form.save()
+            return redirect('trainers:friends')
+    else:
+        form = FriendForm(instance=friend)
+
+    return render(
+        request,
+        'trainers/friend_form.html',
+        {
+            'active_trainer': active_trainer,
+            'friend': friend,
+            'form': form,
+        },
+    )
+
+
+@login_required
+def friends_report_export(request):
+    active_trainer = _get_active_trainer(request)
+    if active_trainer is None:
+        return redirect('trainers:profile_create')
+
+    friends = active_trainer.friends.all()
+    selected_clan = request.GET.get('clan', '').strip()
+    selected_city = request.GET.get('city', '').strip()
+    selected_status = request.GET.get('status', '').strip()
+    query = request.GET.get('q', '').strip()
+
+    if selected_clan:
+        friends = friends.filter(clan=selected_clan)
+    if selected_city:
+        friends = friends.filter(city=selected_city)
+    if selected_status:
+        friends = friends.filter(status=selected_status)
+    if query:
+        friends = friends.filter(Q(name__icontains=query) | Q(nickname__icontains=query))
+
+    output = StringIO()
+    writer = csv.writer(output, delimiter=';')
+    writer.writerow([
+        'Nome',
+        'Apelido',
+        'Clã',
+        'Cidade',
+        'Nível',
+        'Status',
+        'Data de Registro',
+        'Observações',
+    ])
+
+    for friend in friends:
+        writer.writerow([
+            friend.name,
+            friend.nickname or '-',
+            friend.get_clan_display() if hasattr(friend, 'get_clan_display') else friend.clan,
+            friend.get_city_display() if hasattr(friend, 'get_city_display') else friend.city,
+            friend.level,
+            friend.get_status_display(),
+            friend.created_at.strftime('%d/%m/%Y %H:%M') if friend.created_at else '-',
+            friend.notes.replace('\n', ' ') if friend.notes else '',
+        ])
+
+    csv_data = '\ufeff' + output.getvalue()
+    response = HttpResponse(csv_data, content_type='text/csv; charset=utf-8')
+    filename = f'relatorio_amigos_{active_trainer.trainer_name}.csv'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
 
 @login_required
 @require_http_methods(['DELETE', 'POST'])
@@ -348,10 +463,16 @@ def profile_update(request):
     if request.method != 'POST':
         return redirect('trainers:dashboard')
 
+    next_url = request.POST.get('next')
     form = TrainerProfileUpdateForm(request.POST, instance=active_trainer)
     if form.is_valid():
         form.save()
+        if next_url:
+            return redirect(next_url)
+        return redirect('trainers:dashboard')
 
+    if next_url:
+        return redirect(next_url)
     return redirect('trainers:dashboard')
 
 
@@ -429,4 +550,136 @@ def _wants_json(request):
         request.headers.get('x-requested-with') == 'XMLHttpRequest'
         or not accept_header
         or 'application/json' in accept_header
+    )
+
+
+@login_required
+def pokedex_page(request):
+    active_trainer = _get_active_trainer(request)
+    if active_trainer is None:
+        return redirect('trainers:profile_create')
+
+    if request.method == 'POST':
+        form = PokedexRegistrationForm(request.POST)
+        if form.is_valid():
+            num = form.cleaned_data['pokemon_number']
+            if active_trainer.pokedex_registrations.filter(pokemon_number=num).exists():
+                form.add_error('pokemon_number', 'Este Pokémon já está registrado na sua Pokédex.')
+            elif not find_pokemon_by_number(num):
+                form.add_error('pokemon_number', f'Pokémon #{num} não encontrado no catálogo.')
+            else:
+                reg = form.save(commit=False)
+                reg.trainer = active_trainer
+                reg.save()
+                return redirect('trainers:pokedex')
+    else:
+        form = PokedexRegistrationForm()
+
+    query = request.GET.get('q', '').strip().lower()
+    only_favorite = request.GET.get('favorite', '') == '1'
+
+    registrations = active_trainer.pokedex_registrations.all().order_by('pokemon_number')
+    if only_favorite:
+        registrations = registrations.filter(is_favorite=True)
+
+    items = []
+    for reg in registrations:
+        pkmn = find_pokemon_by_number(reg.pokemon_number) or {
+            'number': reg.pokemon_number,
+            'name': f'Pokémon #{reg.pokemon_number:03d}',
+            'image': '',
+            'types': ['normal'],
+        }
+        if query:
+            match_name = query in pkmn.get('name', '').lower()
+            match_num = query in str(reg.pokemon_number)
+            match_nick = query in reg.nickname.lower()
+            match_type = any(query in t.lower() for t in pkmn.get('types', []))
+            if not (match_name or match_num or match_nick or match_type):
+                continue
+
+        items.append({
+            'registration': reg,
+            'pokemon': pkmn,
+        })
+
+    return render(
+        request,
+        'trainers/pokedex.html',
+        {
+            'active_trainer': active_trainer,
+            'items': items,
+            'total_registered': active_trainer.pokedex_registrations.count(),
+            'form': form,
+            'query': query,
+            'only_favorite': only_favorite,
+        },
+    )
+
+
+@login_required
+def pokedex_update(request, registration_id):
+    active_trainer = _get_active_trainer(request)
+    if active_trainer is None:
+        return redirect('trainers:profile_create')
+
+    registration = get_object_or_404(active_trainer.pokedex_registrations, id=registration_id)
+    pokemon = find_pokemon_by_number(registration.pokemon_number) or {
+        'number': registration.pokemon_number,
+        'name': f'Pokémon #{registration.pokemon_number:03d}',
+        'image': '',
+        'types': ['normal'],
+    }
+
+    if request.method == 'POST':
+        form = PokedexRegistrationUpdateForm(request.POST, instance=registration)
+        if form.is_valid():
+            form.save()
+            return redirect('trainers:pokedex')
+    else:
+        form = PokedexRegistrationUpdateForm(instance=registration)
+
+    return render(
+        request,
+        'trainers/pokedex_form.html',
+        {
+            'active_trainer': active_trainer,
+            'registration': registration,
+            'pokemon': pokemon,
+            'form': form,
+        },
+    )
+
+
+@login_required
+@require_http_methods(['DELETE', 'POST'])
+def pokedex_delete(request, registration_id):
+    active_trainer = _get_active_trainer(request)
+    if active_trainer is None:
+        return JsonResponse({'error': 'Personagem ativo não encontrado.'}, status=403)
+
+    registration = get_object_or_404(active_trainer.pokedex_registrations, id=registration_id)
+    registration.delete()
+
+    if request.method == 'DELETE' or request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'deleted': True})
+    return redirect('trainers:pokedex')
+
+
+@login_required
+def profile_detail(request):
+    active_trainer = _get_active_trainer(request)
+    if active_trainer is None:
+        return redirect('trainers:profile_create')
+
+    return render(
+        request,
+        'trainers/profile_page.html',
+        {
+            'active_trainer': active_trainer,
+            'trainer_card': active_trainer.get_or_create_card(),
+            'trainer_profiles': request.user.trainer_profiles.all(),
+            'profile_form': TrainerProfileUpdateForm(instance=active_trainer),
+            'password_form': PasswordChangeForm(request.user),
+        },
     )

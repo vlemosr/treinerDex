@@ -787,3 +787,241 @@ class TrainerProfileAccessTests(TestCase):
         self.assertRedirects(response, reverse('trainers:dashboard'))
         self.assertFalse(TrainerProfile.objects.filter(id=second.id).exists())
         self.assertEqual(self.client.session['active_trainer_id'], first.id)
+
+    def test_public_home_accessible_without_login(self):
+        """Requisito: Home aberta e navegavel sem credenciais."""
+        response = self.client.get(reverse('trainers:home'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'trainers/home.html')
+        self.assertContains(response, 'TrainerDex')
+        self.assertContains(response, 'Área Pública Aberta')
+
+    def test_protected_routes_redirect_to_login(self):
+        """Requisito: Acessar modulos internos redireciona automaticamente para /login/."""
+        for url_name in ['trainers:dashboard', 'trainers:friends', 'trainers:profile_create']:
+            response = self.client.get(reverse(url_name))
+            self.assertEqual(response.status_code, 302)
+            self.assertIn(reverse('accounts:login'), response['Location'])
+
+    def test_friend_crud_update_view(self):
+        """Requisito: CRUD completo com ModelForm (Update em Friend)."""
+        user = User.objects.create_user(username='cruduser', password='StrongPass123!')
+        trainer = TrainerProfile.objects.create(
+            user=user,
+            trainer_name='CrudTrainer',
+            gender='male',
+            city='pallet_town',
+            clan='orebound',
+        )
+        friend = Friend.objects.create(
+            trainer=trainer,
+            name='Brock',
+            nickname='Pedra',
+            clan='orebound',
+            city='pewter_city',
+            level=15,
+            notes='Líder de ginásio',
+        )
+        self.client.force_login(user)
+
+        # GET friend_update
+        response = self.client.get(reverse('trainers:friend_update', args=[friend.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'trainers/friend_form.html')
+        self.assertContains(response, 'Brock')
+
+        # POST friend_update
+        update_data = {
+            'name': 'Brock Pewter',
+            'nickname': 'Mestre Pedra',
+            'clan': 'orebound',
+            'city': 'pewter_city',
+            'level': 20,
+            'notes': 'Líder experiente',
+        }
+        post_response = self.client.post(reverse('trainers:friend_update', args=[friend.id]), update_data)
+        self.assertRedirects(post_response, reverse('trainers:friends'))
+        friend.refresh_from_db()
+        self.assertEqual(friend.name, 'Brock Pewter')
+        self.assertEqual(friend.nickname, 'Mestre Pedra')
+        self.assertEqual(friend.level, 20)
+
+    def test_friend_report_export_csv(self):
+        """Requisito: Tela de consultas com filtros e geracao/exportacao de relatorio."""
+        user = User.objects.create_user(username='reportuser', password='StrongPass123!')
+        trainer = TrainerProfile.objects.create(
+            user=user,
+            trainer_name='ReportTrainer',
+            gender='female',
+            city='cerulean_city',
+            clan='seavel',
+        )
+        Friend.objects.create(
+            trainer=trainer,
+            name='Misty',
+            nickname='Aquatica',
+            clan='seavel',
+            city='cerulean_city',
+            level=18,
+            status='added',
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('trainers:friends_report_export'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'text/csv; charset=utf-8')
+        self.assertIn('attachment; filename=', response['Content-Disposition'])
+        content = response.content.decode('utf-8')
+        self.assertIn('Nome;Apelido;Clã;Cidade;Nível;Status', content)
+        self.assertIn('Misty;Aquatica', content)
+
+    def test_models_relationships_1_to_1_and_n_to_n_through(self):
+        """Requisito: Relacionamentos 1:1 e N:N com tabela intermediaria through."""
+        from trainers.models import Mission, MissionCompletion, TrainerCard
+
+        user = User.objects.create_user(username='reluser', password='StrongPass123!')
+        trainer = TrainerProfile.objects.create(
+            user=user,
+            trainer_name='RelTrainer',
+            gender='male',
+            city='viridian_city',
+            clan='naturia',
+        )
+
+        # 1:1 (TrainerProfile <-> TrainerCard)
+        card = trainer.get_or_create_card()
+        self.assertIsInstance(card, TrainerCard)
+        self.assertEqual(card.trainer, trainer)
+        self.assertEqual(trainer.card, card)
+
+        # N:N with through (TrainerProfile <-> Mission through MissionCompletion)
+        mission = Mission.objects.create(key='test-quest', title='Busca Lendária', xp_reward=5000)
+        completion = MissionCompletion.objects.create(
+            trainer=trainer,
+            mission=mission,
+            mission_key=mission.key,
+            xp_reward=5000,
+        )
+        self.assertIn(mission, trainer.completed_missions.all())
+        self.assertIn(trainer, mission.completed_by_trainers.all())
+        self.assertEqual(completion.mission, mission)
+        self.assertEqual(completion.trainer, trainer)
+
+    def test_dashboard_indicators_aggregated_from_database(self):
+        """Requisito: Dashboard com indicadores reais agregados do banco de dados (Count, Sum, Avg)."""
+        user = User.objects.create_user(username='dashuser', password='StrongPass123!')
+        trainer = TrainerProfile.objects.create(
+            user=user,
+            trainer_name='StatsTrainer',
+            gender='female',
+            city='vermilion_city',
+            clan='raibolt',
+        )
+        Friend.objects.create(trainer=trainer, name='LtSurge', nickname='Trovão', clan='raibolt', city='vermilion_city', level=30)
+        Friend.objects.create(trainer=trainer, name='Volkner', nickname='Raio', clan='raibolt', city='vermilion_city', level=40)
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('trainers:dashboard'))
+        self.assertEqual(response.status_code, 200)
+        stats = response.context['stats']
+        self.assertEqual(stats['friends_count'], 2)
+        self.assertEqual(stats['friends_avg_level'], 35.0)
+        self.assertIn('stats', response.context)
+        self.assertContains(response, 'Indicadores agregados do banco de dados')
+
+    def test_pokedex_crud_lifecycle(self):
+        """CRUD Pokédex completo: Criar, Listar, Atualizar e Excluir registro de Pokémon."""
+        user = User.objects.create_user(username='pkuser', password='StrongPass123!')
+        trainer = TrainerProfile.objects.create(
+            user=user,
+            trainer_name='DexMaster',
+            gender='male',
+            city='pallet_town',
+            clan='orebound',
+        )
+        self.client.force_login(user)
+
+        # 1. CREATE via pokedex_page POST
+        post_data = {
+            'pokemon_number': 25,
+            'nickname': 'PikaPika',
+            'notes': 'Capturado no bosque de Viridian',
+            'is_favorite': True,
+        }
+        res_create = self.client.post(reverse('trainers:pokedex'), post_data)
+        self.assertRedirects(res_create, reverse('trainers:pokedex'))
+        registration = trainer.pokedex_registrations.get(pokemon_number=25)
+        self.assertEqual(registration.nickname, 'PikaPika')
+        self.assertTrue(registration.is_favorite)
+
+        # 2. READ via pokedex_page GET
+        res_read = self.client.get(reverse('trainers:pokedex'))
+        self.assertEqual(res_read.status_code, 200)
+        self.assertTemplateUsed(res_read, 'trainers/pokedex.html')
+        self.assertContains(res_read, 'PikaPika')
+        self.assertContains(res_read, 'Pikachu')
+
+        # 3. UPDATE via pokedex_update GET & POST
+        res_edit_get = self.client.get(reverse('trainers:pokedex_update', args=[registration.id]))
+        self.assertEqual(res_edit_get.status_code, 200)
+        self.assertTemplateUsed(res_edit_get, 'trainers/pokedex_form.html')
+
+        update_data = {
+            'nickname': 'Sparky Gold',
+            'notes': 'Treinado até a perfeição elétrica',
+            'is_favorite': True,
+        }
+        res_edit_post = self.client.post(reverse('trainers:pokedex_update', args=[registration.id]), update_data)
+        self.assertRedirects(res_edit_post, reverse('trainers:pokedex'))
+        registration.refresh_from_db()
+        self.assertEqual(registration.nickname, 'Sparky Gold')
+        self.assertEqual(registration.notes, 'Treinado até a perfeição elétrica')
+
+        # 4. DELETE via pokedex_delete POST
+        res_delete = self.client.post(reverse('trainers:pokedex_delete', args=[registration.id]))
+        self.assertRedirects(res_delete, reverse('trainers:pokedex'))
+        self.assertFalse(trainer.pokedex_registrations.filter(pokemon_number=25).exists())
+
+    def test_profile_crud_dedicated_page(self):
+        """CRUD Perfil: visualização e gestão dedicada de perfis do treinador."""
+        user = User.objects.create_user(username='profuser', password='StrongPass123!')
+        trainer = TrainerProfile.objects.create(
+            user=user,
+            trainer_name='ProfileLead',
+            gender='female',
+            city='cerulean_city',
+            clan='seavel',
+        )
+        self.client.force_login(user)
+
+        res = self.client.get(reverse('trainers:profile_detail'))
+        self.assertEqual(res.status_code, 200)
+        self.assertTemplateUsed(res, 'trainers/profile_page.html')
+        self.assertContains(res, 'ProfileLead')
+        self.assertContains(res, 'Código da Licença')
+        self.assertIn('trainer_card', res.context)
+        self.assertIn('profile_form', res.context)
+
+    def test_dashboard_buttons_link_to_dedicated_cruds(self):
+        """Os botoes de Perfil e Pokedex no dashboard redirecionam diretamente para as rotas dos seus CRUDs."""
+        user = User.objects.create_user(username='navuser', password='StrongPass123!')
+        trainer = TrainerProfile.objects.create(
+            user=user,
+            trainer_name='NavTrainer',
+            gender='male',
+            city='pallet_town',
+            clan='orebound',
+        )
+        self.client.force_login(user)
+
+        res = self.client.get(reverse('trainers:dashboard'))
+        self.assertEqual(res.status_code, 200)
+
+        # Verifica que o botao de Perfil aponta para o CRUD de perfil
+        self.assertContains(res, f'href="{reverse("trainers:profile_detail")}"')
+        # Verifica que o botao de Pokedex aponta para o CRUD da pokedex
+        self.assertContains(res, f'href="{reverse("trainers:pokedex")}"')
+
+        # Verifica que os modais foram removidos do dashboard
+        self.assertNotContains(res, 'data-profile-modal')
+        self.assertNotContains(res, 'data-pokedex-modal')
