@@ -68,6 +68,10 @@ def find_pokemon_by_name(name):
     return matches[0] if len(matches) == 1 else None
 
 
+def get_all_pokemon_names():
+    return [pokemon['name'] for pokemon in _local_pokedex()]
+
+
 @lru_cache(maxsize=1)
 def _local_pokedex():
     with DATA_FILE.open(encoding='utf-8') as pokemon_file:

@@ -107,15 +107,7 @@
                 </div>
             </section>
 
-            <section class="menu-grid" aria-label="Menu do treinador">
-                <a
-                    href="{% url 'trainers:profile_detail' %}"
-                    class="menu-card menu-card-button"
-                    style="text-decoration: none; border-left: 4px solid #00d2ff; display: flex; flex-direction: column; justify-content: center; align-items: center;"
-                >
-                    <span style="color: #66dcff;">Perfil</span>
-                    <small>Gerenciar personagens e conta</small>
-                </a>
+            <section class="menu-grid" aria-label="Menu do treinador" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
                 <button
                     class="menu-card menu-card-button"
                     type="button"
@@ -125,14 +117,6 @@
                     <span style="color: #2ed573;">Mochila</span>
                     <small>Inventário e equipe</small>
                 </button>
-                <a
-                    href="{% url 'trainers:pokedex' %}"
-                    class="menu-card menu-card-button"
-                    style="text-decoration: none; border-left: 4px solid #ff4757; display: flex; flex-direction: column; justify-content: center; align-items: center;"
-                >
-                    <span style="color: #ff6b81;">Pokédex</span>
-                    <small>Catálogo e coleção de Pokémon</small>
-                </a>
                 <button
                     class="menu-card menu-card-button"
                     type="button"

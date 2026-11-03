@@ -20,7 +20,7 @@ from .services.inventory import (
     initialize_trainer_inventory,
 )
 from .services.missions import complete_mission_for_trainer, get_missions_for_trainer
-from .services.pokedex import find_pokemon_by_name, find_pokemon_by_number, search_pokemon
+from .services.pokedex import find_pokemon_by_name, find_pokemon_by_number, get_all_pokemon_names, search_pokemon
 
 
 def home(request):
@@ -562,14 +562,17 @@ def pokedex_page(request):
     if request.method == 'POST':
         form = PokedexRegistrationForm(request.POST)
         if form.is_valid():
-            num = form.cleaned_data['pokemon_number']
-            if active_trainer.pokedex_registrations.filter(pokemon_number=num).exists():
-                form.add_error('pokemon_number', 'Este Pokémon já está registrado na sua Pokédex.')
-            elif not find_pokemon_by_number(num):
-                form.add_error('pokemon_number', f'Pokémon #{num} não encontrado no catálogo.')
+            pkmn = getattr(form, 'cleaned_pokemon', None)
+            num = pkmn['number'] if pkmn else getattr(form.instance, 'pokemon_number', None)
+            name = pkmn['name'] if pkmn else f'#{num}'
+            if num and active_trainer.pokedex_registrations.filter(pokemon_number=num).exists():
+                form.add_error('pokemon_name', f'O Pokémon {name} já está registrado na sua Pokédex.')
+            elif not num or not find_pokemon_by_number(num):
+                form.add_error('pokemon_name', f'Pokémon {name} não encontrado no catálogo.')
             else:
                 reg = form.save(commit=False)
                 reg.trainer = active_trainer
+                reg.pokemon_number = num
                 reg.save()
                 return redirect('trainers:pokedex')
     else:
@@ -613,6 +616,7 @@ def pokedex_page(request):
             'form': form,
             'query': query,
             'only_favorite': only_favorite,
+            'all_pokemon_names': get_all_pokemon_names(),
         },
     )
 

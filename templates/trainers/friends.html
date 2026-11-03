@@ -71,7 +71,7 @@
                 </h3>
                 <form class="friend-filters" method="get" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; background: rgba(10, 15, 28, 0.6); padding: 18px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.08);">
                     <div style="flex: 1; min-width: 150px;">
-                        <label for="friend-search-filter" style="display: block; font-size: 0.82rem; margin-bottom: 6px; color: #cbd5e1; font-weight: 700;">Buscar por nome / apelido</label>
+                        <label for="friend-search-filter" style="display: block; font-size: 0.82rem; margin-bottom: 6px; color: #cbd5e1; font-weight: 700;">Buscar por nome</label>
                         <input type="text" id="friend-search-filter" name="q" value="{{ query|default:'' }}" placeholder="Ex: Ash, Misty, Brock..." style="width: 100%;">
                     </div>
 
@@ -120,20 +120,24 @@
             <section class="friends-list" aria-label="Amigos registrados">
                 {% if friends %}
                     {% for friend in friends %}
-                        <article class="friend-card" data-friend-card>
+                        <article class="friend-card" data-friend-card style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
                             <div style="flex: 1;">
-                                <span class="{% if friend.status == 'added' %}badge-status-added{% else %}badge-status-invited{% endif %}">
-                                    {{ friend.get_status_display }}
-                                </span>
-                                <h2>{{ friend.name }}</h2>
-                                <div class="friend-details">
-                                    <span><strong>Apelido:</strong> {{ friend.nickname|default:"Não informado" }}</span>
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                    <span class="{% if friend.status == 'added' %}badge-status-added{% else %}badge-status-invited{% endif %}">
+                                        {{ friend.get_status_display }}
+                                    </span>
+                                    <span style="background: rgba(250, 219, 20, 0.15); color: #fadb14; border: 1px solid rgba(250, 219, 20, 0.35); padding: 2px 10px; border-radius: 4px; font-size: 0.78rem; font-weight: 700;">
+                                        Nv. {{ friend.level }}
+                                    </span>
+                                </div>
+                                <h2 style="margin: 4px 0 10px; font-size: 1.35rem; color: #ffffff;">{{ friend.name }}</h2>
+                                <div class="friend-details" style="display: flex; flex-wrap: wrap; gap: 10px 18px; margin-top: 8px; font-size: 0.9rem;">
                                     <span><strong style="color: #66dcff;">Clã:</strong> {{ friend.get_clan_display|default:"Não informado" }}</span>
                                     <span><strong style="color: #cbd5e1;">Cidade:</strong> {{ friend.get_city_display|default:"Não informada" }}</span>
                                     <span><strong style="color: #fadb14;">Nível:</strong> {{ friend.level }}</span>
                                 </div>
                                 {% if friend.notes %}
-                                    <p class="friend-notes">{{ friend.notes }}</p>
+                                    <p class="friend-notes" style="margin-top: 12px; background: rgba(0, 0, 0, 0.35); border-left: 3px solid #fadb14; padding: 8px 12px; border-radius: 4px; color: #cbd5e1; font-size: 0.88rem;">{{ friend.notes }}</p>
                                 {% endif %}
                             </div>
                             <div class="friend-card-actions">

@@ -54,9 +54,14 @@
 
                 <div class="form-grid">
                     <div class="field-group">
-                        <label for="{{ form.pokemon_number.id_for_label }}">{{ form.pokemon_number.label }}</label>
-                        {{ form.pokemon_number }}
-                        {{ form.pokemon_number.errors }}
+                        <label for="{{ form.pokemon_name.id_for_label }}">{{ form.pokemon_name.label }}</label>
+                        {{ form.pokemon_name }}
+                        {{ form.pokemon_name.errors }}
+                        <datalist id="pokemon-name-list">
+                            {% for p_name in all_pokemon_names %}
+                                <option value="{{ p_name }}"></option>
+                            {% endfor %}
+                        </datalist>
                     </div>
                     <div class="field-group">
                         <label for="{{ form.nickname.id_for_label }}">{{ form.nickname.label }}</label>

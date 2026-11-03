@@ -1025,3 +1025,86 @@ class TrainerProfileAccessTests(TestCase):
         # Verifica que os modais foram removidos do dashboard
         self.assertNotContains(res, 'data-profile-modal')
         self.assertNotContains(res, 'data-pokedex-modal')
+
+    def test_dashboard_removes_pokedex_and_profile_from_menu_grid_keeping_top_nav(self):
+        """Dashboard remove os cards de Perfil e Pokédex do menu-grid, mantendo-os no top-nav."""
+        user = User.objects.create_user(username='gridnavuser', password='StrongPass123!')
+        TrainerProfile.objects.create(
+            user=user,
+            trainer_name='GridNavTrainer',
+            gender='male',
+            city='pallet_town',
+            clan='orebound',
+        )
+        self.client.force_login(user)
+
+        res = self.client.get(reverse('trainers:dashboard'))
+        self.assertEqual(res.status_code, 200)
+
+        # No top-nav:
+        self.assertContains(res, 'class="nav-tab-item">Pokédex</a>')
+        self.assertContains(res, 'class="nav-tab-item">Perfil</a>')
+
+        # No menu-grid: Perfil e Pokedex foram removidos dos cards, restando Mochila e Missões
+        content = res.content.decode('utf-8')
+        menu_grid_idx = content.find('class="menu-grid"')
+        menu_grid_end = content.find('</section>', menu_grid_idx)
+        menu_grid_html = content[menu_grid_idx:menu_grid_end]
+        self.assertNotIn('Perfil', menu_grid_html)
+        self.assertNotIn('Pokédex', menu_grid_html)
+        self.assertIn('data-inventory-open', menu_grid_html)
+        self.assertIn('data-missions-open', menu_grid_html)
+
+    def test_pokedex_registration_by_name(self):
+        """Cadastro de Pokémon na Pokédex feito pelo nome ao invés de número."""
+        user = User.objects.create_user(username='pknameuser', password='StrongPass123!')
+        trainer = TrainerProfile.objects.create(
+            user=user,
+            trainer_name='PkNameTrainer',
+            gender='male',
+            city='pallet_town',
+            clan='orebound',
+        )
+        self.client.force_login(user)
+
+        res = self.client.post(reverse('trainers:pokedex'), {
+            'pokemon_name': 'Charmander',
+            'nickname': 'Flame',
+            'notes': 'Capturado perto do vulcão',
+            'is_favorite': True,
+        })
+        self.assertRedirects(res, reverse('trainers:pokedex'))
+        self.assertTrue(trainer.pokedex_registrations.filter(pokemon_number=4).exists())
+
+    def test_friends_details_without_nickname(self):
+        """No CRUD de amigos, a parte de dados do amigo não exibe campo de apelido."""
+        user = User.objects.create_user(username='nonickuser', password='StrongPass123!')
+        trainer = TrainerProfile.objects.create(
+            user=user,
+            trainer_name='NoNickTrainer',
+            gender='male',
+            city='pallet_town',
+            clan='orebound',
+        )
+        friend = Friend.objects.create(
+            trainer=trainer,
+            name='Misty',
+            clan='seavel',
+            city='cerulean_city',
+            level=25,
+            notes='Especialista em água',
+        )
+        self.client.force_login(user)
+
+        res = self.client.get(reverse('trainers:friends'))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'Misty')
+        self.assertContains(res, 'Clã:')
+        self.assertContains(res, 'Cidade:')
+        self.assertContains(res, 'Nível:')
+        # Não exibe campo ou detalhe de Apelido nos dados do amigo
+        content = res.content.decode('utf-8')
+        friend_card_idx = content.find('data-friend-card')
+        friend_card_end = content.find('</article>', friend_card_idx)
+        card_html = content[friend_card_idx:friend_card_end]
+        self.assertNotIn('Apelido:', card_html)
