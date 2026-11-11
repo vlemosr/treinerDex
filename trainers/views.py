@@ -1,16 +1,22 @@
 import csv
 from io import StringIO
-from django.http import HttpResponse
-from django.db.models import Avg, Count, Sum, Q
+
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import update_session_auth_hash
-from django.views.decorators.http import require_POST, require_http_methods
-from django.http import JsonResponse
+from django.db.models import Avg, Count, Q, Sum
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.views.decorators.http import require_http_methods, require_POST
 
-from .forms import FriendForm, PokedexRegistrationForm, PokedexRegistrationUpdateForm, TrainerProfileForm, TrainerProfileUpdateForm
+from .forms import (
+    FriendForm,
+    PokedexRegistrationForm,
+    PokedexRegistrationUpdateForm,
+    TrainerProfileForm,
+    TrainerProfileUpdateForm,
+)
 from .models import Friend, PokedexRegistration, TrainerProfile, TrainerTeamMember
 from .services.experience import get_level_progress, sync_trainer_experience
 from .services.inventory import (
@@ -20,7 +26,12 @@ from .services.inventory import (
     initialize_trainer_inventory,
 )
 from .services.missions import complete_mission_for_trainer, get_missions_for_trainer
-from .services.pokedex import find_pokemon_by_name, find_pokemon_by_number, get_all_pokemon_names, search_pokemon
+from .services.pokedex import (
+    find_pokemon_by_name,
+    find_pokemon_by_number,
+    get_all_pokemon_names,
+    search_pokemon,
+)
 
 
 def home(request):
@@ -54,18 +65,9 @@ def dashboard(request):
         'inventory_slots': get_inventory_slots(active_trainer),
         'team_slots': get_team_slots(active_trainer),
         'pokemon_deposit': get_pokemon_deposit(active_trainer),
-        'registered_pokemon': [
-            find_pokemon_by_number(number)
-            for number in active_trainer.pokedex_registrations.values_list(
-                'pokemon_number', flat=True
-            )
-            if find_pokemon_by_number(number)
-        ],
         'missions': get_missions_for_trainer(active_trainer),
         'trainer_profiles': request.user.trainer_profiles.all(),
-        'profile_form': TrainerProfileUpdateForm(instance=active_trainer),
         'create_profile_form': TrainerProfileForm(),
-        'password_form': PasswordChangeForm(request.user),
     }
     return render(request, 'trainers/dashboard.html', context)
 
@@ -294,6 +296,30 @@ def pokedex_register(request):
     })
 
 
+def _filter_friends(friends_qs, params):
+    """Auxiliar compartilhado para filtrar queryset de amigos."""
+    selected_clan = params.get('clan', '').strip()
+    selected_city = params.get('city', '').strip()
+    selected_status = params.get('status', '').strip()
+    query = params.get('q', '').strip()
+
+    if selected_clan:
+        friends_qs = friends_qs.filter(clan=selected_clan)
+    if selected_city:
+        friends_qs = friends_qs.filter(city=selected_city)
+    if selected_status:
+        friends_qs = friends_qs.filter(status=selected_status)
+    if query:
+        friends_qs = friends_qs.filter(Q(name__icontains=query) | Q(nickname__icontains=query))
+
+    return friends_qs, {
+        'selected_clan': selected_clan,
+        'selected_city': selected_city,
+        'selected_status': selected_status,
+        'query': query,
+    }
+
+
 @login_required
 @require_http_methods(['GET', 'POST'])
 def friends_page(request):
@@ -314,36 +340,17 @@ def friends_page(request):
     else:
         friend_form = FriendForm()
 
-    friends = active_trainer.friends.all()
-    selected_clan = request.GET.get('clan', '').strip()
-    selected_city = request.GET.get('city', '').strip()
-    selected_status = request.GET.get('status', '').strip()
-    query = request.GET.get('q', '').strip()
+    friends, filter_context = _filter_friends(active_trainer.friends.all(), request.GET)
 
-    if selected_clan:
-        friends = friends.filter(clan=selected_clan)
-    if selected_city:
-        friends = friends.filter(city=selected_city)
-    if selected_status:
-        friends = friends.filter(status=selected_status)
-    if query:
-        friends = friends.filter(Q(name__icontains=query) | Q(nickname__icontains=query))
-
-    return render(
-        request,
-        'trainers/friends.html',
-        {
-            'active_trainer': active_trainer,
-            'friends': friends,
-            'friend_form': friend_form,
-            'clan_choices': TrainerProfile.CLAN_CHOICES,
-            'city_choices': TrainerProfile.CITY_CHOICES,
-            'selected_clan': selected_clan,
-            'selected_city': selected_city,
-            'selected_status': selected_status,
-            'query': query,
-        },
-    )
+    context = {
+        'active_trainer': active_trainer,
+        'friends': friends,
+        'friend_form': friend_form,
+        'clan_choices': TrainerProfile.CLAN_CHOICES,
+        'city_choices': TrainerProfile.CITY_CHOICES,
+        **filter_context,
+    }
+    return render(request, 'trainers/friends.html', context)
 
 
 @login_required
@@ -357,7 +364,6 @@ def friend_invite(request, friend_id):
     friend.status = 'invited'
     friend.save(update_fields=['status'])
     return redirect('trainers:friends')
-
 
 
 @login_required
@@ -393,20 +399,7 @@ def friends_report_export(request):
     if active_trainer is None:
         return redirect('trainers:profile_create')
 
-    friends = active_trainer.friends.all()
-    selected_clan = request.GET.get('clan', '').strip()
-    selected_city = request.GET.get('city', '').strip()
-    selected_status = request.GET.get('status', '').strip()
-    query = request.GET.get('q', '').strip()
-
-    if selected_clan:
-        friends = friends.filter(clan=selected_clan)
-    if selected_city:
-        friends = friends.filter(city=selected_city)
-    if selected_status:
-        friends = friends.filter(status=selected_status)
-    if query:
-        friends = friends.filter(Q(name__icontains=query) | Q(nickname__icontains=query))
+    friends, _ = _filter_friends(active_trainer.friends.all(), request.GET)
 
     output = StringIO()
     writer = csv.writer(output, delimiter=';')
@@ -438,6 +431,7 @@ def friends_report_export(request):
     filename = f'relatorio_amigos_{active_trainer.trainer_name}.csv'
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
+
 
 @login_required
 @require_http_methods(['DELETE', 'POST'])

@@ -42,7 +42,6 @@ urlpatterns = [
     path('pokedex/<int:registration_id>/excluir/', pokedex_delete, name='pokedex_delete'),
     path('pokedex/buscar/', pokedex_search, name='pokedex_search'),
     path('pokedex/registrar/', pokedex_register, name='pokedex_register'),
-    path('pokedex_register/', pokedex_register, name='pokedex_register_alias'),
     path('amigos/', friends_page, name='friends'),
     path('amigos/relatorio/exportar/', friends_report_export, name='friends_report_export'),
     path('amigos/<int:friend_id>/editar/', friend_update, name='friend_update'),

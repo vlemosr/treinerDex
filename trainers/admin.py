@@ -1,6 +1,15 @@
 from django.contrib import admin
 
-from .models import Friend, InventoryItem, Mission, MissionCompletion, PokedexRegistration, TrainerCard, TrainerProfile
+from .models import (
+    Friend,
+    InventoryItem,
+    Mission,
+    MissionCompletion,
+    PokedexRegistration,
+    TrainerCard,
+    TrainerProfile,
+    TrainerTeamMember,
+)
 
 
 @admin.register(TrainerProfile)
@@ -47,3 +56,10 @@ class TrainerCardAdmin(admin.ModelAdmin):
 class MissionAdmin(admin.ModelAdmin):
     list_display = ('title', 'key', 'xp_reward')
     search_fields = ('title', 'key')
+
+
+@admin.register(TrainerTeamMember)
+class TrainerTeamMemberAdmin(admin.ModelAdmin):
+    list_display = ('trainer', 'slot_number', 'pokemon_number', 'updated_at')
+    list_filter = ('slot_number',)
+    search_fields = ('trainer__trainer_name', 'pokemon_number')

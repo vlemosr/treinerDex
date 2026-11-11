@@ -1,4 +1,7 @@
-from pokebase.common import SPRITE_URL
+try:
+    from pokebase.common import SPRITE_URL
+except ImportError:
+    SPRITE_URL = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites'
 
 
 INVENTORY_SLOT_COUNT = 40
