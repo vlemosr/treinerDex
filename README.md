@@ -42,6 +42,34 @@ Instale antes:
 
 - Python 3.11 ou superior.
 - Git.
+- PostgreSQL e pgAdmin 4.
+
+### Instalando e configurando o PostgreSQL e o pgAdmin 4
+
+Antes de configurar o programa, instale o PostgreSQL junto com o pgAdmin 4 e crie o banco de dados com o mesmo nome e senha definidos em `core/settings.py`:
+
+1. Baixe e instale o PostgreSQL (que ja inclui o **pgAdmin 4**) pelo site oficial: `https://www.postgresql.org/download/` (ou baixe o pgAdmin separadamente em `https://www.pgadmin.org/download/`).
+2. Durante a instalacao do PostgreSQL:
+   - Certifique-se de manter a opcao **pgAdmin 4** selecionada.
+   - Quando o instalador pedir a senha do usuario padrao (`postgres`), defina a senha como **`123`**.
+   - Mantenha a porta padrao **`5432`**.
+3. Abra o **pgAdmin 4** apos a instalacao.
+4. No painel lateral esquerdo, clique em **Servers** > **PostgreSQL** e informe a senha **`123`** para conectar.
+5. Clique com o botao direito em **Databases** > **Create** > **Database...**.
+6. No campo **Database**, informe o nome **`pokemon_db`** e mantenha o **Owner** como **`postgres`**.
+7. Clique em **Save** para criar o banco de dados.
+
+Configuracao utilizada pelo projeto em `core/settings.py`:
+
+```text
+NAME: pokemon_db
+USER: postgres
+PASSWORD: 123
+HOST: 127.0.0.1
+PORT: 5432
+```
+
+### Configurando o programa
 
 Depois clone o projeto:
 
