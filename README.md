@@ -74,7 +74,7 @@ PORT: 5432
 Depois clone o projeto:
 
 ```powershell
-git clone https://gitlab.com/vlemosr/treiner-dex.git
+git clone https://github.com/vlemosr/treinerDex
 cd treiner-dex
 ```
 
